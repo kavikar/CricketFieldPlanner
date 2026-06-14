@@ -1,0 +1,6 @@
+{
+  "name": "Cricket Field Planner",
+  "description": "A tactical field setting designer and rule planner for cricket captains and enthusiasts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
