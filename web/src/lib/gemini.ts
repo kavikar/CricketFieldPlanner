@@ -1,13 +1,6 @@
 import type { BowlerType, Fielder, Format, OverType, ValidationResult } from "../types";
 import { getFielderZone } from "./validation";
 
-const MODEL = "gemini-2.5-flash";
-
-export function isGeminiConfigured(): boolean {
-  const key = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
-  return !!key && key !== "MY_GEMINI_API_KEY";
-}
-
 export async function getTacticalAdvice(
   players: Fielder[],
   format: Format,
@@ -16,13 +9,6 @@ export async function getTacticalAdvice(
   isLeftHanded: boolean,
   validation: ValidationResult,
 ): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
-  if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
-    throw new Error(
-      "No Gemini API key configured. Add VITE_GEMINI_API_KEY to web/.env to enable AI tactical advice.",
-    );
-  }
-
   const fieldSummary = players
     .map((p) => `- ${p.label} (${p.name}): X:${Math.round(p.x)}% Y:${Math.round(p.y)}% [${getFielderZone(p.x, p.y, isLeftHanded)}]`)
     .join("\n");
@@ -39,24 +25,19 @@ Fielders outside 30-yard circle: ${validation.outsideCircleCount}${validation.ma
 Field positions:
 ${fieldSummary}`;
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
-    },
-  );
+  const res = await fetch("/api/tactical-advice", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
+  });
+
+  const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Gemini API error (${res.status}): ${body || res.statusText}`);
+    throw new Error(data?.error || `Tactical advisor error (${res.status}): ${res.statusText}`);
   }
 
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Gemini API returned no advice text.");
+  const text = data?.text;
+  if (!text) throw new Error("Tactical advisor returned no advice text.");
   return text.trim();
 }

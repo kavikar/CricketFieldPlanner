@@ -8,11 +8,12 @@ A React + TypeScript + Vite web version of the Cricket Field Planner (see the [A
 npm install
 ```
 
-Optional — enable the AI Advisor:
+Optional — enable the AI Advisor locally (requires the Wrangler CLI to serve the API proxy function):
 
 ```bash
-cp .env.example .env
-# then add your Gemini API key from https://aistudio.google.com/apikey to .env
+cp .env.example .dev.vars
+# then add your Gemini API key from https://aistudio.google.com/apikey to .dev.vars
+npx wrangler pages dev -- npm run dev
 ```
 
 ## Run
@@ -20,6 +21,8 @@ cp .env.example .env
 ```bash
 npm run dev
 ```
+
+(The AI Advisor button will error out under plain `npm run dev` since it calls `/api/tactical-advice`, which only exists under Wrangler or once deployed to Cloudflare Pages.)
 
 ## Build
 
@@ -32,4 +35,4 @@ npm run preview
 
 - Field logic (presets, ICC validation rules, zone labeling) is ported 1:1 from the Android app's `MainActivity.kt`.
 - Custom preset slots are stored in `localStorage` (equivalent to the Android app's `SharedPreferences`).
-- The Gemini API key is read from `VITE_GEMINI_API_KEY` and used client-side — fine for local/personal use, but don't ship the built bundle publicly with a real key embedded. For a public deployment, proxy the Gemini call through a small backend.
+- AI Advisor calls go through `functions/api/tactical-advice.ts`, a Cloudflare Pages Function. The Gemini API key is read server-side from the `GEMINI_API_KEY` environment variable/secret and never reaches the browser.
