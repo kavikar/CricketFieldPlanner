@@ -42,7 +42,7 @@ export function validateField(
       for (const player of outsideFielders) illegalFielderIds.add(player.id);
     }
 
-    const insideCount = 11 - outsideCount;
+    const insideCount = players.length - outsideCount;
     if (insideCount < 2) {
       violations.push("At least 2 fielders must remain inside the 30-yard circle");
     }
