@@ -1,8 +1,10 @@
 package com.example
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Paint as AndroidPaint
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -46,12 +48,16 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.ui.theme.MyApplicationTheme
 import kotlin.math.*
+
+// Shared with the web app (web/public/privacy.html) — one policy, two apps.
+const val PRIVACY_POLICY_URL = "https://cricketfieldplanner.com/privacy.html"
 
 // ==========================================
 // DATA MODELS
@@ -1094,6 +1100,7 @@ fun ControlsDrawer(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     // Get currently selected player info
     val selectedPlayer = players.find { it.id == selectedPlayerId }
@@ -1530,6 +1537,20 @@ fun ControlsDrawer(
                 Text("Reset", fontWeight = FontWeight.Bold, color = Color(0xFFE2E2E6), fontSize = 13.sp)
             }
         }
+
+        Text(
+            text = "Privacy Policy",
+            fontSize = 11.sp,
+            color = Color(0xFFA8ABB4),
+            textDecoration = TextDecoration.Underline,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+                .clickable {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PRIVACY_POLICY_URL)))
+                }
+        )
     }
 }
 

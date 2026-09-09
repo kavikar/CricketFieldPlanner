@@ -266,6 +266,10 @@ export default function ControlsPanel({
           Reset
         </button>
       </div>
+
+      <a className="privacy-link" href="/privacy.html" target="_blank" rel="noreferrer">
+        Privacy Policy
+      </a>
     </div>
   );
 }

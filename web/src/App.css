@@ -459,6 +459,14 @@
   padding: 0 20px;
 }
 
+.privacy-link {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #a8abb4;
+}
+
 /* Validation banner */
 .validation-banner {
   display: flex;

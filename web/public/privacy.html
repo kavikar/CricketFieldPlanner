@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy — Cricket Field Planner</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        background: #0e1117;
+        color: #e2e2e6;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.6;
+      }
+      .wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+      }
+      h1 {
+        font-size: 22px;
+        margin-bottom: 4px;
+      }
+      .updated {
+        color: #a8abb4;
+        font-size: 12px;
+        font-family: monospace;
+        letter-spacing: 0.5px;
+        margin-bottom: 32px;
+      }
+      h2 {
+        font-size: 15px;
+        margin-top: 32px;
+        color: #d1e1ff;
+      }
+      p, li {
+        font-size: 14px;
+        color: #cfd2d8;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      .card {
+        background: #1a1f2e;
+        border: 1px solid #33353a;
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin: 16px 0;
+      }
+      a {
+        color: #8ab4ff;
+      }
+      code {
+        background: #0e1117;
+        border: 1px solid #33353a;
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 13px;
+      }
+      .back {
+        display: inline-block;
+        margin-bottom: 24px;
+        font-size: 13px;
+        color: #a8abb4;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <a class="back" href="/">← Back to Cricket Field Planner</a>
+      <h1>Privacy Policy</h1>
+      <div class="updated">Last updated: September 9, 2026</div>
+
+      <p>
+        This policy covers <strong>Cricket Field Planner</strong> — the Android app and the web app
+        at <a href="https://cricketfieldplanner.com">cricketfieldplanner.com</a>. Both are built and
+        maintained by an independent developer, not a company.
+      </p>
+
+      <h2>The short version</h2>
+      <div class="card">
+        <p style="margin: 0">
+          Nothing you enter in this app is collected, transmitted, or seen by the developer. Field
+          layouts you save stay on your own device or in your own browser. There are no accounts, no
+          ads, and no analytics or tracking of any kind. The one exception — the optional AI Advice
+          feature — sends data only to Google, only if you choose to use it, and only using an API
+          key you provide yourself.
+        </p>
+      </div>
+
+      <h2>Data stored on your device</h2>
+      <p>Custom field presets you save (the "Memory Slot" feature) are stored only locally:</p>
+      <ul>
+        <li>On Android, in the app's private <code>SharedPreferences</code> storage.</li>
+        <li>On the web app, in your browser's <code>localStorage</code>.</li>
+      </ul>
+      <p>
+        This data never leaves your device. Uninstalling the app or clearing your browser's site
+        data for cricketfieldplanner.com deletes it permanently. The developer has no access to it,
+        no copy of it, and no way to recover it for you.
+      </p>
+
+      <h2>AI Advice (web app) — bring your own API key</h2>
+      <p>
+        The web app's "AI Advice" feature is optional and off by default. If you choose to use it,
+        you provide your own Google Gemini API key, which is:
+      </p>
+      <ul>
+        <li>Stored only in your browser's <code>localStorage</code> — never sent to or stored by this app's developer.</li>
+        <li>
+          Used to call Google's Generative Language API <strong>directly from your browser</strong>.
+          There is no server in between. The only data sent in that request is the current field
+          layout (fielder positions, match format, and phase) and your API key — no personal
+          information, no account details, no browsing history.
+        </li>
+      </ul>
+      <p>
+        That request, and Google's handling of it, is governed by
+        <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noreferrer">Google's own terms and privacy policy</a>
+        for the Gemini API — not this developer's. You can remove your saved key at any time from
+        within the app ("Change API Key").
+      </p>
+      <p>
+        The Android app does not yet have this feature (shown as "Coming Soon" in the app). When it
+        ships, it will follow the same bring-your-own-key model, and this policy will be updated
+        accordingly.
+      </p>
+
+      <h2>What this app does not do</h2>
+      <ul>
+        <li>No account creation or sign-in of any kind.</li>
+        <li>No advertising or ad networks.</li>
+        <li>No analytics, crash reporting, or usage tracking.</li>
+        <li>No location, contacts, camera, microphone, or other device permissions requested.</li>
+        <li>No data sold or shared with third parties.</li>
+      </ul>
+
+      <h2>Children's privacy</h2>
+      <p>
+        This app is not directed at children and does not knowingly collect any information from
+        anyone, of any age — there is nothing to collect.
+      </p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        If this app's data practices change (for example, when AI Advice ships on Android), this
+        page will be updated and the "Last updated" date above will change.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about this policy: <a href="mailto:karthik.v451@gmail.com">karthik.v451@gmail.com</a>
+      </p>
+    </div>
+  </body>
+</html>
