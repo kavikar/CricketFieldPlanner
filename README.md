@@ -44,12 +44,13 @@ Web only:
 Prerequisites: Android Studio.
 
 1. Open the project in Android Studio and let the Gradle sync finish.
-2. `debug.keystore` is git-ignored and not present in a fresh clone, so the
-   debug build type cannot resolve its signing config. Either remove
-   `signingConfig = signingConfigs.getByName("debugConfig")` from
-   [`app/build.gradle.kts`](app/build.gradle.kts) or drop your own
-   `debug.keystore` at the repository root.
-3. Run on an emulator or a physical device.
+2. Run on an emulator or a physical device.
+
+`debug.keystore` is git-ignored and absent from a fresh clone, so
+[`app/build.gradle.kts`](app/build.gradle.kts) only wires up the `debugConfig`
+signing config when that file is present — otherwise debug builds fall back to
+the default debug signing and need no setup. Drop your own `debug.keystore` at
+the repository root if you want debug builds signed with a stable key.
 
 The module is wired to the Secrets Gradle plugin, which reads `.env` (falling
 back to [`.env.example`](.env.example)) — see [Configuration](#configuration).
@@ -99,6 +100,5 @@ web/                       React + TypeScript web application
 | ---------------- | ---------------------- | ------------------------------------ |
 | `GEMINI_API_KEY` | Web AI advisor only    | Server-side only. Never commit a key. |
 
-`.env` is git-ignored at both the root and in `web/`; only the `.env.example`
-files are tracked. Note that `web/.dev.vars` is not covered by
-`web/.gitignore` yet — add it there before putting a real key in it.
+`.env` and `web/.dev.vars` are git-ignored; only the `.env.example` files are
+tracked.
