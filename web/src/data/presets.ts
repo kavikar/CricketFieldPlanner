@@ -44,8 +44,8 @@ const PACE_DEATH: Fielder[] = [
 
 const SPIN_POWERPLAY: Fielder[] = [
   { id: "wk", name: "Wicketkeeper", label: "WK", x: 50, y: 59.5, isWK: true },
-  { id: "sl1", name: "1st Slip", label: "SL", x: 45, y: 61 },
-  { id: "smon", name: "Silly Mid-on", label: "SMOn", x: 46, y: 52 },
+  { id: "sl1", name: "1st Slip", label: "SL1", x: 45, y: 61 },
+  { id: "smon", name: "Silly Mid-on", label: "SMOn", x: 54, y: 52 },
   { id: "c", name: "Cover", label: "C", x: 30, y: 42 },
   { id: "moff", name: "Mid-off", label: "MOff", x: 43, y: 35 },
   { id: "mon", name: "Mid-on", label: "MOn", x: 57, y: 35 },
@@ -58,9 +58,9 @@ const SPIN_POWERPLAY: Fielder[] = [
 
 const SPIN_NON_POWERPLAY: Fielder[] = [
   { id: "wk", name: "Wicketkeeper", label: "WK", x: 50, y: 59.5, isWK: true },
-  { id: "sl1", name: "1st Slip", label: "SL", x: 45, y: 61 },
+  { id: "sl1", name: "1st Slip", label: "SL1", x: 45, y: 61 },
   { id: "slg", name: "Short Leg", label: "SLg", x: 54, y: 57 },
-  { id: "smon", name: "Silly Mid-on", label: "SMOn", x: 46, y: 52 },
+  { id: "smon", name: "Silly Mid-on", label: "SMOn", x: 54, y: 52 },
   { id: "c", name: "Cover", label: "C", x: 30, y: 42 },
   { id: "fl", name: "Fine Leg", label: "FL", x: 62, y: 68 },
   { id: "lon", name: "Long-on", label: "LOn", x: 60, y: 10 },
