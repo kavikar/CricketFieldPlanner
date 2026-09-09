@@ -7,6 +7,13 @@ export interface Fielder {
   isWK?: boolean;
 }
 
+export interface PresetInfo {
+  title: string;
+  summary: string;
+  advantages: string[];
+  disadvantages: string[];
+}
+
 export interface ValidationResult {
   isValid: boolean;
   outsideCircleCount: number;

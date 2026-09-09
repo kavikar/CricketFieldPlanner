@@ -629,6 +629,106 @@
   white-space: pre-wrap;
 }
 
+/* Tactical Summary Card */
+.tactic-card {
+  background: #0e1117;
+  border: 1px solid #33353a;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tactic-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 10px 12px 6px;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.tactic-title-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tactic-badge {
+  flex-shrink: 0;
+  background: #404859;
+  color: #d1e1ff;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.tactic-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tactic-chevron {
+  font-size: 8px;
+  color: #a8abb4;
+  flex-shrink: 0;
+}
+
+.tactic-summary {
+  font-size: 10px;
+  color: #a8abb4;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 12px 10px;
+}
+
+.tactic-body {
+  border-top: 1px solid #1e2330;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tactic-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tactic-section-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.tactic-pro { color: #8df0bd; }
+.tactic-con { color: #ff8a80; }
+
+.tactic-list {
+  margin: 0;
+  padding-left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tactic-list li {
+  font-size: 10px;
+  color: #c8ccd8;
+  line-height: 1.4;
+}
+
 /* Toast */
 .toast {
   position: fixed;

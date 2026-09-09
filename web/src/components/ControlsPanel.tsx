@@ -1,5 +1,7 @@
+import { useState } from "react";
 import type { BowlerType, Fielder, Format, OverType, ValidationResult } from "../types";
 import { getFielderZone } from "../lib/validation";
+import { getPresetInfo } from "../data/presets";
 import ValidationBanner from "./ValidationBanner";
 
 interface PresetChip {
@@ -37,6 +39,52 @@ interface Props {
   onLoadClicked: (serialized: string) => void;
   onClearPreset: (slot: number) => void;
   customPresets: (string | null)[];
+}
+
+function TacticalSummary({
+  bowlerType,
+  overType,
+  format,
+}: {
+  bowlerType: BowlerType;
+  overType: OverType;
+  format: Format;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const info = getPresetInfo(bowlerType, overType, format);
+
+  return (
+    <div className="tactic-card">
+      <button className="tactic-header" onClick={() => setExpanded((v) => !v)}>
+        <div className="tactic-title-row">
+          <span className="tactic-badge">TACTIC</span>
+          <span className="tactic-title">{info.title}</span>
+        </div>
+        <span className="tactic-chevron">{expanded ? "▲" : "▼"}</span>
+      </button>
+      <p className="tactic-summary">{info.summary}</p>
+      {expanded && (
+        <div className="tactic-body">
+          <div className="tactic-section">
+            <div className="tactic-section-label tactic-pro">✔ Advantages</div>
+            <ul className="tactic-list">
+              {info.advantages.map((a, i) => (
+                <li key={i}>{a}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="tactic-section">
+            <div className="tactic-section-label tactic-con">✘ Disadvantages</div>
+            <ul className="tactic-list">
+              {info.disadvantages.map((d, i) => (
+                <li key={i}>{d}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function ControlsPanel({
@@ -150,6 +198,8 @@ export default function ControlsPanel({
           <span className="switch-track" />
         </label>
       </div>
+
+      <TacticalSummary bowlerType={bowlerType} overType={overType} format={format} />
 
       <div className="section">
         <div className="section-label">PREDEFINED TACTICAL PRESETS</div>
