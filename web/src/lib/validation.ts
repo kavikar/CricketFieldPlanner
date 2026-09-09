@@ -49,11 +49,12 @@ export function validateField(
   }
 
   // 2. Leg-side behind square rule (all formats): max 2 fielders behind square on leg-side (excluding WK)
+  // Bird's-eye view convention: for RHB off-side=right(x>50), leg-side=left(x<50); mirrored for LHB
   const legSideBehindSquareFielders: Fielder[] = [];
   for (const player of players) {
     if (!player.isWK) {
       const isBehindSquare = player.y > 58;
-      const isLegSide = isLeftHanded ? player.x < 50 : player.x > 50;
+      const isLegSide = isLeftHanded ? player.x > 50 : player.x < 50;
       if (isBehindSquare && isLegSide) legSideBehindSquareFielders.push(player);
     }
   }
@@ -68,7 +69,7 @@ export function validateField(
   // 3. Leg-side total limit: max 5 fielders total on leg-side (all formats)
   const legSideFielders: Fielder[] = [];
   for (const player of players) {
-    const isLegSide = isLeftHanded ? player.x < 50 : player.x > 50;
+    const isLegSide = isLeftHanded ? player.x > 50 : player.x < 50;
     if (isLegSide) legSideFielders.push(player);
   }
 
@@ -97,14 +98,15 @@ export function getFielderZone(x: number, y: number, isLeftHanded: boolean): str
   const vertLabel =
     y > 58 ? "Behind Crease (Back)" : y >= 42 && y <= 58 ? "Square of Wicket" : "In Front of Crease (Forward)";
 
+  // Bird's-eye: right(x>50) = off-side for RHB, left(x<50) = leg-side for RHB; swapped for LHB
   const isRHSideOfField = x > 50;
   const zoneSide = isLeftHanded
     ? isRHSideOfField
-      ? "Off-side"
-      : "Leg-side"
-    : isRHSideOfField
       ? "Leg-side"
-      : "Off-side";
+      : "Off-side"
+    : isRHSideOfField
+      ? "Off-side"
+      : "Leg-side";
 
   const regionName = isDeep ? "Deep Outfield" : "Infield Circle";
 

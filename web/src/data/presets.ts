@@ -1,92 +1,94 @@
 import type { BowlerType, Fielder, OverType, Format, PresetInfo } from "../types";
 
-// Coordinate system: center=(50,50), bowling end=top(y≈0), striker end=bottom(y≈100)
-// For RHB: off-side=left(x<50), leg-side=right(x>50)
-// 30-yard circle radius=25, boundary radius≈46
+// Coordinate system (bird's-eye view, bowling end at top):
+//   center=(50,50), bowling end y≈0, striker end y≈100
+//   For RHB: off-side = RIGHT (x>50), leg-side = LEFT (x<50)
+//   For LHB: mirror(x = 100-x) is applied automatically
+// 30-yard circle radius=25, boundary radius≈46, drag clamp radius=44
 
 const PACE_POWERPLAY: Fielder[] = [
   { id: "wk",   name: "Wicketkeeper",   label: "WK",   x: 50,  y: 72,   isWK: true },
-  { id: "sl1",  name: "1st Slip",       label: "SL1",  x: 45,  y: 63  },
-  { id: "sl2",  name: "2nd Slip",       label: "SL2",  x: 41,  y: 65  },
-  { id: "g",    name: "Gully",          label: "G",    x: 37,  y: 61  },
-  { id: "cp",   name: "Cover Point",    label: "CP",   x: 29,  y: 48  },
-  { id: "c",    name: "Cover",          label: "C",    x: 33,  y: 39  },
-  { id: "moff", name: "Mid-off",        label: "MOff", x: 43,  y: 34  },
-  { id: "mon",  name: "Mid-on",         label: "MOn",  x: 57,  y: 34  },
-  { id: "sl",   name: "Square Leg",     label: "SL",   x: 70,  y: 54  },
-  { id: "fl",   name: "Fine Leg",       label: "FL",   x: 74,  y: 80  }, // outside ✓
-  { id: "tm",   name: "Third Man",      label: "TM",   x: 22,  y: 78  }, // outside ✓
+  { id: "sl1",  name: "1st Slip",       label: "SL1",  x: 55,  y: 63  }, // off-side (right) ✓
+  { id: "sl2",  name: "2nd Slip",       label: "SL2",  x: 59,  y: 65  },
+  { id: "g",    name: "Gully",          label: "G",    x: 63,  y: 61  },
+  { id: "cp",   name: "Cover Point",    label: "CP",   x: 71,  y: 48  },
+  { id: "c",    name: "Cover",          label: "C",    x: 67,  y: 39  },
+  { id: "moff", name: "Mid-off",        label: "MOff", x: 57,  y: 34  },
+  { id: "mon",  name: "Mid-on",         label: "MOn",  x: 43,  y: 34  }, // leg-side (left) ✓
+  { id: "sl",   name: "Square Leg",     label: "SL",   x: 30,  y: 54  },
+  { id: "fl",   name: "Fine Leg",       label: "FL",   x: 26,  y: 80  }, // outside ✓
+  { id: "tm",   name: "Third Man",      label: "TM",   x: 78,  y: 78  }, // outside ✓
 ];
 
 const PACE_NON_POWERPLAY: Fielder[] = [
   { id: "wk",   name: "Wicketkeeper",   label: "WK",   x: 50,  y: 72,   isWK: true },
-  { id: "sl1",  name: "1st Slip",       label: "SL1",  x: 44,  y: 63  },
-  { id: "moff", name: "Mid-off",        label: "MOff", x: 43,  y: 37  },
-  { id: "ssl",  name: "Short Sq. Leg",  label: "SSL",  x: 68,  y: 55  },
-  { id: "sfl",  name: "Short Fine Leg", label: "SFL",  x: 62,  y: 68  },
-  { id: "mw",   name: "Midwicket",      label: "MW",   x: 64,  y: 40  },
-  { id: "dtm",  name: "Deep Third Man", label: "DTM",  x: 15,  y: 78  }, // outside ✓
-  { id: "dp",   name: "Deep Point",     label: "DP",   x: 10,  y: 50  }, // outside ✓
-  { id: "dc",   name: "Deep Cover",     label: "DC",   x: 17,  y: 23  }, // outside ✓
-  { id: "loff", name: "Long-off",       label: "LOff", x: 40,  y: 7   }, // outside ✓
-  { id: "lon",  name: "Long-on",        label: "LOn",  x: 60,  y: 7   }, // outside ✓
+  { id: "sl1",  name: "1st Slip",       label: "SL1",  x: 56,  y: 63  },
+  { id: "moff", name: "Mid-off",        label: "MOff", x: 57,  y: 37  },
+  { id: "ssl",  name: "Short Sq. Leg",  label: "SSL",  x: 32,  y: 55  },
+  { id: "sfl",  name: "Short Fine Leg", label: "SFL",  x: 38,  y: 68  },
+  { id: "mw",   name: "Midwicket",      label: "MW",   x: 36,  y: 40  },
+  { id: "dtm",  name: "Deep Third Man", label: "DTM",  x: 85,  y: 78  }, // outside ✓
+  { id: "dp",   name: "Deep Point",     label: "DP",   x: 90,  y: 50  }, // outside ✓
+  { id: "dc",   name: "Deep Cover",     label: "DC",   x: 83,  y: 23  }, // outside ✓
+  { id: "loff", name: "Long-off",       label: "LOff", x: 60,  y: 7   }, // outside ✓
+  { id: "lon",  name: "Long-on",        label: "LOn",  x: 40,  y: 7   }, // outside ✓
 ];
 
 const PACE_DEATH: Fielder[] = [
   { id: "wk",   name: "Wicketkeeper",     label: "WK",   x: 50,  y: 74,   isWK: true },
-  { id: "sfl",  name: "Short Fine Leg",   label: "SFL",  x: 58,  y: 65  },
-  { id: "moff", name: "Mid-off",          label: "MOff", x: 43,  y: 38  },
-  { id: "mw",   name: "Midwicket",        label: "MW",   x: 63,  y: 40  },
-  { id: "p",    name: "Point",            label: "P",    x: 29,  y: 50  },
-  { id: "c",    name: "Cover",            label: "C",    x: 34,  y: 39  },
-  { id: "dsl",  name: "Deep Square Leg",  label: "DSL",  x: 80,  y: 66  }, // outside ✓
-  { id: "lon",  name: "Long-on",          label: "LOn",  x: 60,  y: 7   }, // outside ✓
-  { id: "loff", name: "Long-off",         label: "LOff", x: 40,  y: 7   }, // outside ✓
-  { id: "dc",   name: "Deep Cover",       label: "DC",   x: 16,  y: 25  }, // outside ✓
-  { id: "tm",   name: "Third Man",        label: "TM",   x: 17,  y: 78  }, // outside ✓
+  { id: "sfl",  name: "Short Fine Leg",   label: "SFL",  x: 42,  y: 65  },
+  { id: "moff", name: "Mid-off",          label: "MOff", x: 57,  y: 38  },
+  { id: "mw",   name: "Midwicket",        label: "MW",   x: 37,  y: 40  },
+  { id: "p",    name: "Point",            label: "P",    x: 71,  y: 50  },
+  { id: "c",    name: "Cover",            label: "C",    x: 66,  y: 39  },
+  { id: "dsl",  name: "Deep Square Leg",  label: "DSL",  x: 20,  y: 66  }, // outside ✓
+  { id: "lon",  name: "Long-on",          label: "LOn",  x: 40,  y: 7   }, // outside ✓
+  { id: "loff", name: "Long-off",         label: "LOff", x: 60,  y: 7   }, // outside ✓
+  { id: "dc",   name: "Deep Cover",       label: "DC",   x: 84,  y: 25  }, // outside ✓
+  { id: "tm",   name: "Third Man",        label: "TM",   x: 83,  y: 78  }, // outside ✓
 ];
 
 const SPIN_POWERPLAY: Fielder[] = [
   { id: "wk",   name: "Wicketkeeper",  label: "WK",   x: 50,  y: 59.5, isWK: true },
-  { id: "sl1",  name: "1st Slip",      label: "SL1",  x: 44,  y: 62  },
-  { id: "smon", name: "Silly Mid-on",  label: "SMOn", x: 54,  y: 52  }, // on-side ✓
-  { id: "slg",  name: "Short Leg",     label: "SLg",  x: 55,  y: 57  },
-  { id: "c",    name: "Cover",         label: "C",    x: 29,  y: 42  },
-  { id: "moff", name: "Mid-off",       label: "MOff", x: 43,  y: 34  },
-  { id: "mon",  name: "Mid-on",        label: "MOn",  x: 57,  y: 34  },
-  { id: "p",    name: "Point",         label: "P",    x: 27,  y: 50  },
-  { id: "sl",   name: "Square Leg",    label: "SL",   x: 70,  y: 52  },
-  { id: "fl",   name: "Fine Leg",      label: "FL",   x: 74,  y: 80  }, // outside ✓
-  { id: "dtm",  name: "Deep Third Man",label: "DTM",  x: 21,  y: 78  }, // outside ✓
+  { id: "sl1",  name: "1st Slip",      label: "SL1",  x: 56,  y: 62  }, // off-side ✓
+  { id: "smon", name: "Silly Mid-on",  label: "SMOn", x: 46,  y: 52  }, // leg-side ✓
+  { id: "slg",  name: "Short Leg",     label: "SLg",  x: 45,  y: 57  }, // leg-side ✓
+  { id: "c",    name: "Cover",         label: "C",    x: 71,  y: 42  }, // off-side ✓
+  { id: "moff", name: "Mid-off",       label: "MOff", x: 57,  y: 34  }, // off-side ✓
+  { id: "mon",  name: "Mid-on",        label: "MOn",  x: 43,  y: 34  }, // leg-side ✓
+  { id: "p",    name: "Point",         label: "P",    x: 73,  y: 50  }, // off-side ✓
+  { id: "sl",   name: "Square Leg",    label: "SL",   x: 30,  y: 52  }, // leg-side ✓
+  { id: "fl",   name: "Fine Leg",      label: "FL",   x: 26,  y: 80  }, // outside, leg ✓
+  { id: "dtm",  name: "Deep Third Man",label: "DTM",  x: 79,  y: 78  }, // outside, off ✓
 ];
 
 const SPIN_NON_POWERPLAY: Fielder[] = [
   { id: "wk",   name: "Wicketkeeper",  label: "WK",   x: 50,  y: 59.5, isWK: true },
-  { id: "sl1",  name: "1st Slip",      label: "SL1",  x: 44,  y: 62  },
-  { id: "slg",  name: "Short Leg",     label: "SLg",  x: 55,  y: 57  },
-  { id: "smon", name: "Silly Mid-on",  label: "SMOn", x: 54,  y: 52  }, // on-side ✓
-  { id: "c",    name: "Cover",         label: "C",    x: 30,  y: 42  },
-  { id: "mon",  name: "Mid-on",        label: "MOn",  x: 57,  y: 36  },
-  { id: "fl",   name: "Fine Leg",      label: "FL",   x: 72,  y: 80  }, // outside ✓
-  { id: "lon",  name: "Long-on",       label: "LOn",  x: 60,  y: 7   }, // outside ✓
-  { id: "loff", name: "Long-off",      label: "LOff", x: 40,  y: 7   }, // outside ✓
-  { id: "dp",   name: "Deep Point",    label: "DP",   x: 12,  y: 50  }, // outside ✓
-  { id: "dco",  name: "Deep Cover",    label: "DCo",  x: 17,  y: 25  }, // outside ✓
+  { id: "sl1",  name: "1st Slip",      label: "SL1",  x: 56,  y: 62  },
+  { id: "slg",  name: "Short Leg",     label: "SLg",  x: 45,  y: 57  },
+  { id: "smon", name: "Silly Mid-on",  label: "SMOn", x: 46,  y: 52  },
+  { id: "c",    name: "Cover",         label: "C",    x: 70,  y: 42  },
+  { id: "mon",  name: "Mid-on",        label: "MOn",  x: 43,  y: 36  },
+  { id: "fl",   name: "Fine Leg",      label: "FL",   x: 28,  y: 80  }, // outside, leg ✓
+  { id: "lon",  name: "Long-on",       label: "LOn",  x: 40,  y: 7   }, // outside, leg ✓
+  { id: "loff", name: "Long-off",      label: "LOff", x: 60,  y: 7   }, // outside, off ✓
+  { id: "dp",   name: "Deep Point",    label: "DP",   x: 88,  y: 50  }, // outside, off ✓
+  { id: "dco",  name: "Deep Cover",    label: "DCo",  x: 83,  y: 25  }, // outside, off ✓
 ];
 
-// Designed for Test match attacking spin — max close catchers, no circle restrictions
+// Designed for Test match attacking spin — many close catchers, no circle restrictions apply
 const SPIN_DEATH: Fielder[] = [
   { id: "wk",   name: "Wicketkeeper",     label: "WK",   x: 50,  y: 59.5, isWK: true },
-  { id: "sl1",  name: "1st Slip",         label: "SL1",  x: 44,  y: 62  },
-  { id: "sl2",  name: "2nd Slip",         label: "SL2",  x: 40,  y: 64  },
-  { id: "lsl",  name: "Leg Slip",         label: "LSl",  x: 56,  y: 62  },
-  { id: "sp",   name: "Silly Point",      label: "SP",   x: 44,  y: 56  },
-  { id: "slg",  name: "Short Leg",        label: "SLg",  x: 55,  y: 57  },
-  { id: "mon",  name: "Mid-on",           label: "MOn",  x: 57,  y: 44  },
-  { id: "moff", name: "Mid-off",          label: "MOff", x: 43,  y: 44  },
-  { id: "p",    name: "Point",            label: "P",    x: 27,  y: 50  },
-  { id: "fl",   name: "Fine Leg",         label: "FL",   x: 73,  y: 80  }, // outside ✓
-  { id: "lon",  name: "Long-on",          label: "LOn",  x: 60,  y: 8   }, // outside ✓
+  { id: "sl1",  name: "1st Slip",         label: "SL1",  x: 56,  y: 62  }, // off-side ✓
+  { id: "sl2",  name: "2nd Slip",         label: "SL2",  x: 60,  y: 64  }, // off-side ✓
+  { id: "lsl",  name: "Leg Slip",         label: "LSl",  x: 44,  y: 62  }, // leg-side ✓
+  { id: "sp",   name: "Silly Point",      label: "SP",   x: 56,  y: 56  }, // off-side ✓
+  { id: "slg",  name: "Short Leg",        label: "SLg",  x: 45,  y: 57  }, // leg-side ✓
+  { id: "mon",  name: "Mid-on",           label: "MOn",  x: 43,  y: 44  }, // leg-side ✓
+  { id: "moff", name: "Mid-off",          label: "MOff", x: 57,  y: 44  }, // off-side ✓
+  { id: "p",    name: "Point",            label: "P",    x: 73,  y: 50  }, // off-side ✓
+  { id: "fl",   name: "Fine Leg",         label: "FL",   x: 27,  y: 80  }, // leg-side, deep ✓
+  { id: "lon",  name: "Long-on",          label: "LOn",  x: 40,  y: 8   }, // leg-side, deep ✓
 ];
 
 export function getPreset(
@@ -95,15 +97,15 @@ export function getPreset(
   _format: Format,
 ): Fielder[] {
   if (bowlerType === "Pace") {
-    if (overType === "Powerplay")    return PACE_POWERPLAY;
+    if (overType === "Powerplay")     return PACE_POWERPLAY;
     if (overType === "Non-Powerplay") return PACE_NON_POWERPLAY;
-    if (overType === "Death")        return PACE_DEATH;
+    if (overType === "Death")         return PACE_DEATH;
     return PACE_POWERPLAY;
   }
   if (bowlerType === "Spin") {
-    if (overType === "Powerplay")    return SPIN_POWERPLAY;
+    if (overType === "Powerplay")     return SPIN_POWERPLAY;
     if (overType === "Non-Powerplay") return SPIN_NON_POWERPLAY;
-    if (overType === "Death")        return SPIN_DEATH;
+    if (overType === "Death")         return SPIN_DEATH;
     return SPIN_NON_POWERPLAY;
   }
   return [];
@@ -137,7 +139,7 @@ export function getPresetInfo(
     return {
       title: `Pace ${format === "ODI" ? "ODI" : "T20"} Mid-Overs — Containment`,
       summary:
-        "Balanced mid-overs pace field: a lone slip preserves edge potential while five outfielders guard all four boundary zones. Infield pair pin the batter on the on-side.",
+        "Balanced mid-overs pace field: a lone slip preserves edge potential while five outfielders guard all four boundary zones. Infield pair pins the batter on the on-side.",
       advantages: [
         "Long-on & Long-off seal the straight hitting corridor",
         "Deep Point, Deep Cover & Deep Third Man protect the wide off-side",
@@ -147,7 +149,7 @@ export function getPresetInfo(
       disadvantages: [
         "Cow-corner / mid-wicket gap remains open for aggressive sweepers",
         "A single slip limits catching variety compared to powerplay",
-        "Batters who hit straight early in the arc can exploit the mid-off gap",
+        "Batters who hit straight early can exploit the mid-off gap",
       ],
     };
   }

@@ -34,7 +34,6 @@ interface Props {
   onMirrorToggled: (v: boolean) => void;
   onReset: () => void;
   onTriggerExport: () => void;
-  onTriggerAdvisor: () => void;
   onSaveClicked: (slot: number) => void;
   onLoadClicked: (serialized: string) => void;
   onClearPreset: (slot: number) => void;
@@ -102,7 +101,6 @@ export default function ControlsPanel({
   onMirrorToggled,
   onReset,
   onTriggerExport,
-  onTriggerAdvisor,
   onSaveClicked,
   onLoadClicked,
   onClearPreset,
@@ -256,9 +254,6 @@ export default function ControlsPanel({
       <div className="divider" />
 
       <div className="footer-row">
-        <button className="btn btn-secondary" onClick={onTriggerAdvisor}>
-          🤖 AI Advice
-        </button>
         <button className="btn btn-primary" onClick={onTriggerExport}>
           Export Plan
         </button>
