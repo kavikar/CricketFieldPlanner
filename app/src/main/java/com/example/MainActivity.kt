@@ -727,6 +727,8 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
                     }
                 }
             }
+
+            AiAdviceComingSoonBadge(modifier = Modifier.align(Alignment.TopEnd).padding(16.dp))
         }
     }
 
@@ -1534,6 +1536,34 @@ fun ControlsDrawer(
 // ==========================================
 // CUSTOM STYLING CHIPS & CHUNKS
 // ==========================================
+
+/**
+ * Floating placeholder for the AI Tactical Advisor. The web version has a
+ * working "bring your own Gemini API key" advisor (see the web/ app); this
+ * badge is a preview until the same flow lands here, rather than a dead
+ * button that looks broken.
+ */
+@Composable
+fun AiAdviceComingSoonBadge(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .shadow(elevation = 8.dp, shape = RoundedCornerShape(20.dp), clip = false)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xFF1A1F2E).copy(alpha = 0.92f))
+            .border(1.dp, Color(0xFF33353A), RoundedCornerShape(20.dp))
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(text = "🤖", fontSize = 13.sp)
+        Text(
+            text = "AI Advice — Coming Soon",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFFA8ABB4)
+        )
+    }
+}
 
 @Composable
 fun TacticalValidationStatusBanner(validation: ValidationResults) {
