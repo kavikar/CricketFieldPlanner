@@ -12,6 +12,7 @@ import {
 import FieldCanvas from "./components/FieldCanvas";
 import ControlsPanel from "./components/ControlsPanel";
 import ExportDialog from "./components/ExportDialog";
+import AdvisorDialog from "./components/AdvisorDialog";
 import "./App.css";
 
 function mirror(players: Fielder[]): Fielder[] {
@@ -34,6 +35,7 @@ export default function App() {
   ]);
 
   const [showExport, setShowExport] = useState(false);
+  const [showAdvisor, setShowAdvisor] = useState(false);
   const [saveSlotTarget, setSaveSlotTarget] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -178,6 +180,7 @@ export default function App() {
             onMirrorToggled={handleMirrorToggled}
             onReset={handleReset}
             onTriggerExport={() => setShowExport(true)}
+            onTriggerAdvisor={() => setShowAdvisor(true)}
             onSaveClicked={(slot) => setSaveSlotTarget(slot)}
             onLoadClicked={handleLoadCustomPreset}
             onClearPreset={handleClearCustomPreset}
@@ -195,6 +198,18 @@ export default function App() {
           isLeftHanded={isLeftHanded}
           validation={validation}
           onDismiss={() => setShowExport(false)}
+        />
+      )}
+
+      {showAdvisor && (
+        <AdvisorDialog
+          players={players}
+          format={format}
+          overType={overType}
+          bowlerType={bowlerType}
+          isLeftHanded={isLeftHanded}
+          validation={validation}
+          onDismiss={() => setShowAdvisor(false)}
         />
       )}
 

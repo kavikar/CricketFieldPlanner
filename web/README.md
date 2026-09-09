@@ -8,21 +8,13 @@ A React + TypeScript + Vite web version of the Cricket Field Planner (see the [A
 npm install
 ```
 
-Optional — enable the AI Advisor locally (requires the Wrangler CLI to serve the API proxy function):
-
-```bash
-cp .env.example .dev.vars
-# then add your Gemini API key from https://aistudio.google.com/apikey to .dev.vars
-npx wrangler pages dev -- npm run dev
-```
-
 ## Run
 
 ```bash
 npm run dev
 ```
 
-(The AI Advisor button will error out under plain `npm run dev` since it calls `/api/tactical-advice`, which only exists under Wrangler or once deployed to Cloudflare Pages.)
+The "AI Advice" button works out of the box under plain `npm run dev` — the first time you use it, paste in your own free Gemini API key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey). It's saved only in your browser's `localStorage` and called directly from the browser; it never passes through any server this app runs.
 
 ## Build
 
@@ -35,4 +27,4 @@ npm run preview
 
 - Field logic (presets, ICC validation rules, zone labeling) is ported 1:1 from the Android app's `MainActivity.kt`.
 - Custom preset slots are stored in `localStorage` (equivalent to the Android app's `SharedPreferences`).
-- AI Advisor calls go through `functions/api/tactical-advice.ts`, a Cloudflare Pages Function. The Gemini API key is read server-side from the `GEMINI_API_KEY` environment variable/secret and never reaches the browser.
+- AI Advisor is bring-your-own-key: the visitor's Gemini API key lives only in their browser's `localStorage` (`src/lib/apiKey.ts`) and the browser calls `generativelanguage.googleapis.com` directly (`src/lib/gemini.ts`). This site has no server component in that request path and never sees anyone's key.

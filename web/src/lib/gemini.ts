@@ -1,5 +1,16 @@
 import type { BowlerType, Fielder, Format, OverType, ValidationResult } from "../types";
 import { getFielderZone } from "./validation";
+import { getApiKey } from "./apiKey";
+
+const MODEL = "gemini-2.5-flash";
+
+/** Thrown when the visitor hasn't configured their own Gemini API key yet. */
+export class MissingApiKeyError extends Error {
+  constructor() {
+    super("No Gemini API key configured.");
+    this.name = "MissingApiKeyError";
+  }
+}
 
 export async function getTacticalAdvice(
   players: Fielder[],
@@ -9,6 +20,9 @@ export async function getTacticalAdvice(
   isLeftHanded: boolean,
   validation: ValidationResult,
 ): Promise<string> {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new MissingApiKeyError();
+
   const fieldSummary = players
     .map((p) => `- ${p.label} (${p.name}): X:${Math.round(p.x)}% Y:${Math.round(p.y)}% [${getFielderZone(p.x, p.y, isLeftHanded)}]`)
     .join("\n");
@@ -25,19 +39,32 @@ Fielders outside 30-yard circle: ${validation.outsideCircleCount}${validation.ma
 Field positions:
 ${fieldSummary}`;
 
-  const res = await fetch("/api/tactical-advice", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt }),
-  });
+  // Called directly from the browser with the visitor's own key — this app
+  // has no server component in the request path, so there's no server-side
+  // key to keep secret here. Google's Generative Language API is designed to
+  // be called this way for client-supplied keys.
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    },
+  );
 
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(data?.error || `Tactical advisor error (${res.status}): ${res.statusText}`);
+    const apiMessage: string | undefined = data?.error?.message;
+    if (res.status === 400 || res.status === 403) {
+      throw new Error(
+        `Gemini rejected this API key (${res.status}): ${apiMessage || res.statusText}. Check that the key is correct and has the Generative Language API enabled.`,
+      );
+    }
+    throw new Error(`Tactical advisor error (${res.status}): ${apiMessage || res.statusText}`);
   }
 
-  const text = data?.text;
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error("Tactical advisor returned no advice text.");
   return text.trim();
 }
