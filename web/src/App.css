@@ -649,6 +649,15 @@
   gap: 10px;
 }
 
+.honeypot-field {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .advisor-key-form a {
   color: #8ab4ff;
 }

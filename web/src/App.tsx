@@ -13,6 +13,7 @@ import FieldCanvas from "./components/FieldCanvas";
 import ControlsPanel from "./components/ControlsPanel";
 import ExportDialog from "./components/ExportDialog";
 import AdvisorDialog from "./components/AdvisorDialog";
+import BetaSignupDialog from "./components/BetaSignupDialog";
 import "./App.css";
 
 function mirror(players: Fielder[]): Fielder[] {
@@ -36,6 +37,7 @@ export default function App() {
 
   const [showExport, setShowExport] = useState(false);
   const [showAdvisor, setShowAdvisor] = useState(false);
+  const [showBetaSignup, setShowBetaSignup] = useState(false);
   const [saveSlotTarget, setSaveSlotTarget] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -138,6 +140,13 @@ export default function App() {
           </div>
         </div>
         <div className="app-bar-right">
+          <button
+            className="icon-btn round"
+            onClick={() => setShowBetaSignup(true)}
+            aria-label="Join Android Beta Testing"
+          >
+            🧪
+          </button>
           <button className="icon-btn round" onClick={() => setShowExport(true)} aria-label="Export">
             ⤴
           </button>
@@ -212,6 +221,8 @@ export default function App() {
           onDismiss={() => setShowAdvisor(false)}
         />
       )}
+
+      {showBetaSignup && <BetaSignupDialog onDismiss={() => setShowBetaSignup(false)} />}
 
       {saveSlotTarget !== null && (
         <div className="modal-overlay" onClick={() => setSaveSlotTarget(null)}>
