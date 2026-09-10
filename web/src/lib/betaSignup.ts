@@ -24,6 +24,24 @@ export class InvalidEmailError extends Error {
   }
 }
 
+const BANNER_DISMISSED_KEY = "cricket-field-planner:beta-banner-dismissed";
+
+export function hasDismissedBetaBanner(): boolean {
+  try {
+    return window.localStorage.getItem(BANNER_DISMISSED_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function dismissBetaBanner(): void {
+  try {
+    window.localStorage.setItem(BANNER_DISMISSED_KEY, "true");
+  } catch {
+    // Best-effort — worst case the banner reappears next visit.
+  }
+}
+
 export async function submitBetaSignup(email: string): Promise<void> {
   const trimmed = email.trim();
   if (!isValidEmail(trimmed)) throw new InvalidEmailError();

@@ -1,5 +1,12 @@
+/** @vitest-environment jsdom */
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { isValidEmail, submitBetaSignup, InvalidEmailError } from "./betaSignup";
+import {
+  dismissBetaBanner,
+  hasDismissedBetaBanner,
+  isValidEmail,
+  submitBetaSignup,
+  InvalidEmailError,
+} from "./betaSignup";
 
 describe("isValidEmail", () => {
   it("accepts a normal email address", () => {
@@ -58,5 +65,20 @@ describe("submitBetaSignup", () => {
     await expect(submitBetaSignup("player@example.com")).rejects.toThrow(
       "Signup storage is not configured.",
     );
+  });
+});
+
+describe("beta banner dismissal", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("is not dismissed by default", () => {
+    expect(hasDismissedBetaBanner()).toBe(false);
+  });
+
+  it("stays dismissed after dismissBetaBanner is called", () => {
+    dismissBetaBanner();
+    expect(hasDismissedBetaBanner()).toBe(true);
   });
 });

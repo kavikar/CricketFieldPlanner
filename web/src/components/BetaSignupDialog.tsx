@@ -30,7 +30,7 @@ export default function BetaSignupDialog({ onDismiss }: Props) {
     <div className="modal-overlay" onClick={onDismiss}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <span className="modal-title">🧪 JOIN ANDROID BETA TESTING</span>
+          <span className="modal-title">📱 JOIN ANDROID BETA TESTING</span>
           <button className="icon-btn" onClick={onDismiss} aria-label="Close">
             ✕
           </button>

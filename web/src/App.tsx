@@ -14,6 +14,8 @@ import ControlsPanel from "./components/ControlsPanel";
 import ExportDialog from "./components/ExportDialog";
 import AdvisorDialog from "./components/AdvisorDialog";
 import BetaSignupDialog from "./components/BetaSignupDialog";
+import BetaBanner from "./components/BetaBanner";
+import { dismissBetaBanner, hasDismissedBetaBanner } from "./lib/betaSignup";
 import "./App.css";
 
 function mirror(players: Fielder[]): Fielder[] {
@@ -38,6 +40,7 @@ export default function App() {
   const [showExport, setShowExport] = useState(false);
   const [showAdvisor, setShowAdvisor] = useState(false);
   const [showBetaSignup, setShowBetaSignup] = useState(false);
+  const [showBetaBanner, setShowBetaBanner] = useState(() => !hasDismissedBetaBanner());
   const [saveSlotTarget, setSaveSlotTarget] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -120,6 +123,17 @@ export default function App() {
     showToast(`Cleared Preset ${slot}`);
   };
 
+  const handleOpenBetaSignup = () => {
+    dismissBetaBanner();
+    setShowBetaBanner(false);
+    setShowBetaSignup(true);
+  };
+
+  const handleDismissBetaBanner = () => {
+    dismissBetaBanner();
+    setShowBetaBanner(false);
+  };
+
   const handleLoadCustomPreset = (serialized: string) => {
     const loaded = deserializeField(serialized);
     if (loaded) {
@@ -131,6 +145,9 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {showBetaBanner && (
+        <BetaBanner onSignUp={handleOpenBetaSignup} onDismiss={handleDismissBetaBanner} />
+      )}
       <header className="app-bar">
         <div className="app-bar-left">
           <div className="app-logo">🏏</div>
@@ -142,10 +159,10 @@ export default function App() {
         <div className="app-bar-right">
           <button
             className="icon-btn round"
-            onClick={() => setShowBetaSignup(true)}
+            onClick={handleOpenBetaSignup}
             aria-label="Join Android Beta Testing"
           >
-            🧪
+            📱
           </button>
           <button className="icon-btn round" onClick={() => setShowExport(true)} aria-label="Export">
             ⤴
