@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Paint as AndroidPaint
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -58,6 +59,9 @@ import kotlin.math.*
 
 // Shared with the web app (web/public/privacy.html) — one policy, two apps.
 const val PRIVACY_POLICY_URL = "https://cricketfieldplanner.com/privacy.html"
+
+// Same inbox the web app's feedback link and the privacy policy point at.
+const val SUPPORT_EMAIL = "support@cricketfieldplanner.com"
 
 // ==========================================
 // DATA MODELS
@@ -1538,19 +1542,48 @@ fun ControlsDrawer(
             }
         }
 
-        Text(
-            text = "Privacy Policy",
-            fontSize = 11.sp,
-            color = Color(0xFFA8ABB4),
-            textDecoration = TextDecoration.Underline,
-            textAlign = TextAlign.Center,
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
-                .clickable {
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Privacy Policy",
+                fontSize = 11.sp,
+                color = Color(0xFFA8ABB4),
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PRIVACY_POLICY_URL)))
                 }
-        )
+            )
+            Text(
+                text = "  ·  ",
+                fontSize = 11.sp,
+                color = Color(0xFFA8ABB4)
+            )
+            Text(
+                text = "Send Feedback",
+                fontSize = 11.sp,
+                color = Color(0xFFA8ABB4),
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable {
+                    val emailIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).apply {
+                        putExtra(Intent.EXTRA_EMAIL, arrayOf(SUPPORT_EMAIL))
+                        putExtra(Intent.EXTRA_SUBJECT, "Cricket Field Planner (Android) Feedback")
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "\n\n\n---\nApp version: ${BuildConfig.VERSION_NAME}\nDevice: ${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE})"
+                        )
+                    }
+                    if (emailIntent.resolveActivity(context.packageManager) != null) {
+                        context.startActivity(emailIntent)
+                    } else {
+                        Toast.makeText(context, "No email app found — contact $SUPPORT_EMAIL", Toast.LENGTH_LONG).show()
+                    }
+                }
+            )
+        }
     }
 }
 

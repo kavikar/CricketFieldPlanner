@@ -75,14 +75,21 @@ feature, the Data Safety form will need to change:
 
 ## Store listing assets checklist
 
-- [ ] App icon (512×512 PNG, no alpha) — see icon prompt discussed separately
-- [ ] Feature graphic (1024×500 PNG/JPG)
-- [ ] Phone screenshots — min 2, recommend 4-6, PNG/JPG, 16:9 or 9:16
-- [ ] Short description (max 80 chars)
-- [ ] Full description (max 4000 chars)
-- [ ] Privacy policy URL: `https://cricketfieldplanner.com/privacy.html`
-- [ ] Category: likely **Sports** or **Tools**
-- [ ] Contact email (visible on the store listing)
+- [ ] App icon (512×512 PNG, no alpha) — decide between the existing vector icon
+      (`drawable/ic_launcher_foreground.xml` + `ic_launcher_background.xml`,
+      already wired as a proper adaptive icon) and a newly-generated one
+- [ ] Feature graphic (1024×500 PNG/JPG) — not started
+- [ ] Phone screenshots — min 2, recommend 4-6, PNG/JPG, aspect ratio between
+      16:9 and 9:16 (longer side ≤ 2× shorter side). An earlier AI Studio batch
+      came out at 1078×2399 (≈2.23:1) — too elongated, regenerate at 1080×1920.
+- [x] Short + full description — drafted (see chat history / ask to regenerate here)
+- [x] Privacy policy URL: `https://cricketfieldplanner.com/privacy.html`
+- [x] Category: **Sports**
+- [x] Contact email: `support@cricketfieldplanner.com` (Cloudflare Email Routing,
+      forwards to the developer's inbox — set up and verified)
+- [x] In-app feedback: both apps now have a "Send Feedback" link next to
+      Privacy Policy, opening a pre-addressed email to the same support address
+      (Android also includes device/app-version info in the draft body)
 
 ## Signing
 

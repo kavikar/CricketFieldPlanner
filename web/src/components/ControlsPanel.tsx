@@ -267,9 +267,15 @@ export default function ControlsPanel({
         </button>
       </div>
 
-      <a className="privacy-link" href="/privacy.html" target="_blank" rel="noreferrer">
-        Privacy Policy
-      </a>
+      <div className="footer-links">
+        <a href="/privacy.html" target="_blank" rel="noreferrer">
+          Privacy Policy
+        </a>
+        <span aria-hidden="true">·</span>
+        <a href="mailto:support@cricketfieldplanner.com?subject=Cricket%20Field%20Planner%20(Web)%20Feedback">
+          Send Feedback
+        </a>
+      </div>
     </div>
   );
 }

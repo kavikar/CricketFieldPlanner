@@ -459,11 +459,17 @@
   padding: 0 20px;
 }
 
-.privacy-link {
-  display: block;
-  text-align: center;
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
   margin-top: 10px;
   font-size: 11px;
+  color: #a8abb4;
+}
+
+.footer-links a {
   color: #a8abb4;
 }
 
