@@ -21,18 +21,18 @@ android {
   }
 
   signingConfigs {
+    // Real release signing: point KEYSTORE_PATH at your own upload keystore
+    // (generate one with `keytool -genkeypair -v -keystore upload-keystore.jks
+    // -keyalg RSA -keysize 2048 -validity 10000 -alias upload`, keep it out of
+    // git, and back it up somewhere durable — losing it means you can never
+    // update this app on Play again) and set STORE_PASSWORD/KEY_PASSWORD as
+    // environment variables, never committed here.
     create("release") {
       val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
       storeFile = file(keystorePath)
       storePassword = System.getenv("STORE_PASSWORD")
       keyAlias = "upload"
       keyPassword = System.getenv("KEY_PASSWORD")
-    }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
     }
   }
 
@@ -43,9 +43,12 @@ android {
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
-    debug {
-      signingConfig = signingConfigs.getByName("debugConfig")
-    }
+    // debug intentionally has no signingConfig override: Android Gradle
+    // Plugin auto-generates and signs with a default debug keystore at
+    // ~/.android/debug.keystore on first build. A previous version of this
+    // file pointed debug builds at a project-local debug.keystore that was
+    // (correctly) gitignored and never committed, which broke `assembleDebug`
+    // on a fresh checkout until that line was manually deleted.
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11

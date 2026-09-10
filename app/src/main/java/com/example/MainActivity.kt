@@ -1,8 +1,11 @@
 package com.example
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Paint as AndroidPaint
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -47,12 +50,19 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.ui.theme.MyApplicationTheme
 import kotlin.math.*
+
+// Shared with the web app (web/public/privacy.html) — one policy, two apps.
+const val PRIVACY_POLICY_URL = "https://cricketfieldplanner.com/privacy.html"
+
+// Same inbox the web app's feedback link and the privacy policy point at.
+const val SUPPORT_EMAIL = "support@cricketfieldplanner.com"
 
 // ==========================================
 // DATA MODELS
@@ -742,6 +752,8 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
                     }
                 }
             }
+
+            AiAdviceComingSoonBadge(modifier = Modifier.align(Alignment.TopEnd).padding(16.dp))
         }
     }
 
@@ -1189,6 +1201,7 @@ fun ControlsDrawer(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     // Get currently selected player info
     val selectedPlayer = players.find { it.id == selectedPlayerId }
@@ -1728,12 +1741,83 @@ fun ControlsDrawer(
                 Text("Reset", fontWeight = FontWeight.Bold, color = Color(0xFFE2E2E6), fontSize = 13.sp)
             }
         }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Privacy Policy",
+                fontSize = 11.sp,
+                color = Color(0xFFA8ABB4),
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PRIVACY_POLICY_URL)))
+                }
+            )
+            Text(
+                text = "  ·  ",
+                fontSize = 11.sp,
+                color = Color(0xFFA8ABB4)
+            )
+            Text(
+                text = "Send Feedback",
+                fontSize = 11.sp,
+                color = Color(0xFFA8ABB4),
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable {
+                    val emailIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).apply {
+                        putExtra(Intent.EXTRA_EMAIL, arrayOf(SUPPORT_EMAIL))
+                        putExtra(Intent.EXTRA_SUBJECT, "Cricket Field Planner (Android) Feedback")
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "\n\n\n---\nApp version: ${BuildConfig.VERSION_NAME}\nDevice: ${Build.MANUFACTURER} ${Build.MODEL} (Android ${Build.VERSION.RELEASE})"
+                        )
+                    }
+                    if (emailIntent.resolveActivity(context.packageManager) != null) {
+                        context.startActivity(emailIntent)
+                    } else {
+                        Toast.makeText(context, "No email app found — contact $SUPPORT_EMAIL", Toast.LENGTH_LONG).show()
+                    }
+                }
+            )
+        }
     }
 }
 
 // ==========================================
 // CUSTOM STYLING CHIPS & CHUNKS
 // ==========================================
+
+/**
+ * Floating placeholder for the AI Tactical Advisor. The web version has a
+ * working "bring your own Gemini API key" advisor (see the web/ app); this
+ * badge is a preview until the same flow lands here, rather than a dead
+ * button that looks broken.
+ */
+@Composable
+fun AiAdviceComingSoonBadge(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .shadow(elevation = 8.dp, shape = RoundedCornerShape(20.dp), clip = false)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xFF1A1F2E).copy(alpha = 0.92f))
+            .border(1.dp, Color(0xFF33353A), RoundedCornerShape(20.dp))
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(text = "🤖", fontSize = 13.sp)
+        Text(
+            text = "AI Advice — Coming Soon",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFFA8ABB4)
+        )
+    }
+}
 
 @Composable
 fun TacticalValidationStatusBanner(validation: ValidationResults) {

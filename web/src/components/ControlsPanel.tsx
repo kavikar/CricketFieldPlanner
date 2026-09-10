@@ -34,6 +34,7 @@ interface Props {
   onMirrorToggled: (v: boolean) => void;
   onReset: () => void;
   onTriggerExport: () => void;
+  onTriggerAdvisor: () => void;
   onSaveClicked: (slot: number) => void;
   onLoadClicked: (serialized: string) => void;
   onClearPreset: (slot: number) => void;
@@ -101,6 +102,7 @@ export default function ControlsPanel({
   onMirrorToggled,
   onReset,
   onTriggerExport,
+  onTriggerAdvisor,
   onSaveClicked,
   onLoadClicked,
   onClearPreset,
@@ -254,12 +256,25 @@ export default function ControlsPanel({
       <div className="divider" />
 
       <div className="footer-row">
+        <button className="btn btn-secondary" onClick={onTriggerAdvisor}>
+          🤖 AI Advice
+        </button>
         <button className="btn btn-primary" onClick={onTriggerExport}>
           Export Plan
         </button>
         <button className="btn btn-outline" onClick={onReset}>
           Reset
         </button>
+      </div>
+
+      <div className="footer-links">
+        <a href="/privacy.html" target="_blank" rel="noreferrer">
+          Privacy Policy
+        </a>
+        <span aria-hidden="true">·</span>
+        <a href="mailto:support@cricketfieldplanner.com?subject=Cricket%20Field%20Planner%20(Web)%20Feedback">
+          Send Feedback
+        </a>
       </div>
     </div>
   );

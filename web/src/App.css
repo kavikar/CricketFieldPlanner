@@ -459,6 +459,20 @@
   padding: 0 20px;
 }
 
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #a8abb4;
+}
+
+.footer-links a {
+  color: #a8abb4;
+}
+
 /* Validation banner */
 .validation-banner {
   display: flex;
@@ -627,6 +641,29 @@
   font-size: 12px;
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+.advisor-key-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.advisor-key-form a {
+  color: #8ab4ff;
+}
+
+.advisor-key-input {
+  background: #0e1117;
+  border: 1px solid #33353a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e2e2e6;
+  font-size: 13px;
+}
+
+.advisor-key-input:focus {
+  outline: 1px solid #404859;
 }
 
 /* Tactical Summary Card */
