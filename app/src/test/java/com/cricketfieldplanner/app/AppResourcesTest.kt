@@ -1,4 +1,4 @@
-package com.example
+package com.cricketfieldplanner.app
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -10,7 +10,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [36])
-class ExampleRobolectricTest {
+class AppResourcesTest {
 
   @Test
   fun `read string from context`() {
