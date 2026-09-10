@@ -1,114 +1,74 @@
 import type { BowlerType, Fielder, OverType, Format, PresetInfo } from "../types";
+import { anchor, BOWLER_SPOT, KEEPER_SPOT_PACE, KEEPER_SPOT_SPIN } from "../lib/positions";
+import { BOWLER_ID, defaultName, FIELDER_SLOT_IDS, KEEPER_ID } from "../lib/roster";
 
-// Coordinate system (bird's-eye view, bowling end at top):
-//   center=(50,50), bowling end y≈0, striker end y≈100
-//   For RHB: off-side = RIGHT (x>50), leg-side = LEFT (x<50)
-//   For LHB: mirror(x = 100-x) is applied automatically
-// 30-yard circle radius=25, boundary radius≈46, drag clamp radius=44
+/**
+ * Each preset is nine canonical fielding positions — the bowler and keeper are
+ * added automatically, so every field is a legal eleven.
+ *
+ * Positions are named rather than hand-placed so a preset can never drift out
+ * of sync with what the app calls that spot; coordinates come from the single
+ * anchor table in lib/positions.ts.
+ */
+type PresetSpec = readonly [string, string, string, string, string, string, string, string, string];
 
-const PACE_POWERPLAY: Fielder[] = [
-  { id: "wk",   name: "Wicketkeeper",   label: "WK",   x: 50,  y: 72,   isWK: true },
-  { id: "sl1",  name: "1st Slip",       label: "SL1",  x: 55,  y: 63  }, // off-side (right) ✓
-  { id: "sl2",  name: "2nd Slip",       label: "SL2",  x: 59,  y: 65  },
-  { id: "g",    name: "Gully",          label: "G",    x: 63,  y: 61  },
-  { id: "cp",   name: "Cover Point",    label: "CP",   x: 71,  y: 48  },
-  { id: "c",    name: "Cover",          label: "C",    x: 67,  y: 39  },
-  { id: "moff", name: "Mid-off",        label: "MOff", x: 57,  y: 34  },
-  { id: "mon",  name: "Mid-on",         label: "MOn",  x: 43,  y: 34  }, // leg-side (left) ✓
-  { id: "sl",   name: "Square Leg",     label: "SL",   x: 30,  y: 54  },
-  { id: "fl",   name: "Fine Leg",       label: "FL",   x: 26,  y: 80  }, // outside ✓
-  { id: "tm",   name: "Third Man",      label: "TM",   x: 78,  y: 78  }, // outside ✓
+const PACE_POWERPLAY: PresetSpec = [
+  "1st Slip", "2nd Slip", "Cover Point", "Cover", "Mid-off",
+  "Mid-on", "Square Leg", "Fine Leg", "Third Man",
 ];
 
-const PACE_NON_POWERPLAY: Fielder[] = [
-  { id: "wk",   name: "Wicketkeeper",   label: "WK",   x: 50,  y: 72,   isWK: true },
-  { id: "sl1",  name: "1st Slip",       label: "SL1",  x: 56,  y: 63  },
-  { id: "moff", name: "Mid-off",        label: "MOff", x: 57,  y: 37  },
-  { id: "ssl",  name: "Short Sq. Leg",  label: "SSL",  x: 32,  y: 55  },
-  { id: "sfl",  name: "Short Fine Leg", label: "SFL",  x: 38,  y: 68  },
-  { id: "mw",   name: "Midwicket",      label: "MW",   x: 36,  y: 40  },
-  { id: "dtm",  name: "Deep Third Man", label: "DTM",  x: 85,  y: 78  }, // outside ✓
-  { id: "dp",   name: "Deep Point",     label: "DP",   x: 90,  y: 50  }, // outside ✓
-  { id: "dc",   name: "Deep Cover",     label: "DC",   x: 83,  y: 23  }, // outside ✓
-  { id: "loff", name: "Long-off",       label: "LOff", x: 60,  y: 7   }, // outside ✓
-  { id: "lon",  name: "Long-on",        label: "LOn",  x: 40,  y: 7   }, // outside ✓
+const PACE_NON_POWERPLAY: PresetSpec = [
+  "1st Slip", "Mid-off", "Short Fine Leg", "Midwicket", "Third Man",
+  "Deep Point", "Deep Cover", "Long-off", "Long-on",
 ];
 
-const PACE_DEATH: Fielder[] = [
-  { id: "wk",   name: "Wicketkeeper",     label: "WK",   x: 50,  y: 74,   isWK: true },
-  { id: "sfl",  name: "Short Fine Leg",   label: "SFL",  x: 42,  y: 65  },
-  { id: "moff", name: "Mid-off",          label: "MOff", x: 57,  y: 38  },
-  { id: "mw",   name: "Midwicket",        label: "MW",   x: 37,  y: 40  },
-  { id: "p",    name: "Point",            label: "P",    x: 71,  y: 50  },
-  { id: "c",    name: "Cover",            label: "C",    x: 66,  y: 39  },
-  { id: "dsl",  name: "Deep Square Leg",  label: "DSL",  x: 20,  y: 66  }, // outside ✓
-  { id: "lon",  name: "Long-on",          label: "LOn",  x: 40,  y: 7   }, // outside ✓
-  { id: "loff", name: "Long-off",         label: "LOff", x: 60,  y: 7   }, // outside ✓
-  { id: "dc",   name: "Deep Cover",       label: "DC",   x: 84,  y: 25  }, // outside ✓
-  { id: "tm",   name: "Third Man",        label: "TM",   x: 83,  y: 78  }, // outside ✓
+const PACE_DEATH: PresetSpec = [
+  "Short Fine Leg", "Mid-off", "Midwicket", "Point", "Deep Backward Square Leg",
+  "Long-on", "Long-off", "Deep Cover", "Third Man",
 ];
 
-const SPIN_POWERPLAY: Fielder[] = [
-  { id: "wk",   name: "Wicketkeeper",  label: "WK",   x: 50,  y: 59.5, isWK: true },
-  { id: "sl1",  name: "1st Slip",      label: "SL1",  x: 56,  y: 62  }, // off-side ✓
-  { id: "smon", name: "Silly Mid-on",  label: "SMOn", x: 46,  y: 52  }, // leg-side ✓
-  { id: "slg",  name: "Short Leg",     label: "SLg",  x: 45,  y: 57  }, // leg-side ✓
-  { id: "c",    name: "Cover",         label: "C",    x: 71,  y: 42  }, // off-side ✓
-  { id: "moff", name: "Mid-off",       label: "MOff", x: 57,  y: 34  }, // off-side ✓
-  { id: "mon",  name: "Mid-on",        label: "MOn",  x: 43,  y: 34  }, // leg-side ✓
-  { id: "p",    name: "Point",         label: "P",    x: 73,  y: 50  }, // off-side ✓
-  { id: "sl",   name: "Square Leg",    label: "SL",   x: 30,  y: 52  }, // leg-side ✓
-  { id: "fl",   name: "Fine Leg",      label: "FL",   x: 26,  y: 80  }, // outside, leg ✓
-  { id: "dtm",  name: "Deep Third Man",label: "DTM",  x: 79,  y: 78  }, // outside, off ✓
+const SPIN_POWERPLAY: PresetSpec = [
+  "1st Slip", "Silly Mid-on", "Cover", "Mid-off", "Mid-on",
+  "Point", "Square Leg", "Fine Leg", "Third Man",
 ];
 
-const SPIN_NON_POWERPLAY: Fielder[] = [
-  { id: "wk",   name: "Wicketkeeper",  label: "WK",   x: 50,  y: 59.5, isWK: true },
-  { id: "sl1",  name: "1st Slip",      label: "SL1",  x: 56,  y: 62  },
-  { id: "slg",  name: "Short Leg",     label: "SLg",  x: 45,  y: 57  },
-  { id: "smon", name: "Silly Mid-on",  label: "SMOn", x: 46,  y: 52  },
-  { id: "c",    name: "Cover",         label: "C",    x: 70,  y: 42  },
-  { id: "mon",  name: "Mid-on",        label: "MOn",  x: 43,  y: 36  },
-  { id: "fl",   name: "Fine Leg",      label: "FL",   x: 28,  y: 80  }, // outside, leg ✓
-  { id: "lon",  name: "Long-on",       label: "LOn",  x: 40,  y: 7   }, // outside, leg ✓
-  { id: "loff", name: "Long-off",      label: "LOff", x: 60,  y: 7   }, // outside, off ✓
-  { id: "dp",   name: "Deep Point",    label: "DP",   x: 88,  y: 50  }, // outside, off ✓
-  { id: "dco",  name: "Deep Cover",    label: "DCo",  x: 83,  y: 25  }, // outside, off ✓
+const SPIN_NON_POWERPLAY: PresetSpec = [
+  "1st Slip", "Silly Mid-on", "Cover", "Mid-on", "Fine Leg",
+  "Long-on", "Long-off", "Deep Point", "Deep Cover",
 ];
 
-// Designed for Test match attacking spin — many close catchers, no circle restrictions apply
-const SPIN_DEATH: Fielder[] = [
-  { id: "wk",   name: "Wicketkeeper",     label: "WK",   x: 50,  y: 59.5, isWK: true },
-  { id: "sl1",  name: "1st Slip",         label: "SL1",  x: 56,  y: 62  }, // off-side ✓
-  { id: "sl2",  name: "2nd Slip",         label: "SL2",  x: 60,  y: 64  }, // off-side ✓
-  { id: "lsl",  name: "Leg Slip",         label: "LSl",  x: 44,  y: 62  }, // leg-side ✓
-  { id: "sp",   name: "Silly Point",      label: "SP",   x: 56,  y: 56  }, // off-side ✓
-  { id: "slg",  name: "Short Leg",        label: "SLg",  x: 45,  y: 57  }, // leg-side ✓
-  { id: "mon",  name: "Mid-on",           label: "MOn",  x: 43,  y: 44  }, // leg-side ✓
-  { id: "moff", name: "Mid-off",          label: "MOff", x: 57,  y: 44  }, // off-side ✓
-  { id: "p",    name: "Point",            label: "P",    x: 73,  y: 50  }, // off-side ✓
-  { id: "fl",   name: "Fine Leg",         label: "FL",   x: 27,  y: 80  }, // leg-side, deep ✓
-  { id: "lon",  name: "Long-on",          label: "LOn",  x: 40,  y: 8   }, // leg-side, deep ✓
+const SPIN_DEATH: PresetSpec = [
+  "1st Slip", "2nd Slip", "Leg Slip", "Short Leg", "Mid-on",
+  "Mid-off", "Point", "Fine Leg", "Long-on",
 ];
 
-export function getPreset(
-  bowlerType: BowlerType,
-  overType: OverType,
-  _format: Format,
-): Fielder[] {
-  if (bowlerType === "Pace") {
-    if (overType === "Powerplay")     return PACE_POWERPLAY;
-    if (overType === "Non-Powerplay") return PACE_NON_POWERPLAY;
-    if (overType === "Death")         return PACE_DEATH;
-    return PACE_POWERPLAY;
-  }
+/** Build the full eleven: fixed bowler, keeper positioned for the bowling type, nine fielders. */
+function buildField(spec: PresetSpec, bowlerType: BowlerType): Fielder[] {
+  const keeperSpot = bowlerType === "Spin" ? KEEPER_SPOT_SPIN : KEEPER_SPOT_PACE;
+
+  const eleven: Fielder[] = [
+    { id: BOWLER_ID, role: "bowler", name: defaultName(BOWLER_ID), x: BOWLER_SPOT.x, y: BOWLER_SPOT.y },
+    { id: KEEPER_ID, role: "keeper", name: defaultName(KEEPER_ID), x: keeperSpot.x, y: keeperSpot.y },
+  ];
+
+  spec.forEach((positionName, i) => {
+    const slotId = FIELDER_SLOT_IDS[i];
+    const spot = anchor(positionName);
+    eleven.push({ id: slotId, role: "fielder", name: defaultName(slotId), x: spot.x, y: spot.y });
+  });
+
+  return eleven;
+}
+
+export function getPreset(bowlerType: BowlerType, overType: OverType, _format: Format): Fielder[] {
   if (bowlerType === "Spin") {
-    if (overType === "Powerplay")     return SPIN_POWERPLAY;
-    if (overType === "Non-Powerplay") return SPIN_NON_POWERPLAY;
-    if (overType === "Death")         return SPIN_DEATH;
-    return SPIN_NON_POWERPLAY;
+    if (overType === "Powerplay") return buildField(SPIN_POWERPLAY, bowlerType);
+    if (overType === "Death") return buildField(SPIN_DEATH, bowlerType);
+    return buildField(SPIN_NON_POWERPLAY, bowlerType);
   }
-  return [];
+  if (overType === "Powerplay") return buildField(PACE_POWERPLAY, bowlerType);
+  if (overType === "Death") return buildField(PACE_DEATH, bowlerType);
+  return buildField(PACE_NON_POWERPLAY, bowlerType);
 }
 
 export function getPresetInfo(
@@ -116,40 +76,42 @@ export function getPresetInfo(
   overType: OverType,
   format: Format,
 ): PresetInfo {
+  const phase = format === "T20" ? "T20" : format === "ODI" ? "ODI" : "Test";
+
   if (bowlerType === "Pace" && overType === "Powerplay") {
     return {
       title: "Pace Powerplay — Slip Cordon Attack",
       summary:
-        "Classic swing-bowling powerplay formation targeting edges and nicks with a triple slip cordon. Only 2 fielders outside the 30-yard circle as required by ICC rules.",
+        "Swing-bowling powerplay field hunting the edge, with two slips behind the bat. Exactly 2 fielders outside the circle, the maximum the powerplay allows.",
       advantages: [
-        "Triple slip cordon (1st Slip, 2nd Slip, Gully) maximises edge-catch chances",
-        "Cover Point & Cover cut off off-side drives in the V",
-        "Mid-on & Mid-off in catching range for full and straight deliveries",
-        "Fine Leg & Third Man protect the boundary on both sides",
+        "Two slips take every edge that carries",
+        "Cover and Cover Point shut down the off-side drive",
+        "Mid-off and Mid-on stay in catching range for the full ball",
+        "Fine Leg and Third Man cover both boundaries behind square",
       ],
       disadvantages: [
-        "No mid-wicket — leg-side flicks and glances go unpunished",
-        "Slip-heavy field is exposed if batter plays on the front foot",
-        "Aggressive batters can freely target the square leg and cow-corner gaps",
+        "No midwicket — the leg-side flick scores freely",
+        "Only two boundary riders, so anything short is expensive",
+        "Square leg is isolated if the batter works it fine",
       ],
     };
   }
 
   if (bowlerType === "Pace" && overType === "Non-Powerplay") {
     return {
-      title: `Pace ${format === "ODI" ? "ODI" : "T20"} Mid-Overs — Containment`,
+      title: `Pace ${phase} Middle Overs — Containment`,
       summary:
-        "Balanced mid-overs pace field: a lone slip preserves edge potential while five outfielders guard all four boundary zones. Infield pair pins the batter on the on-side.",
+        "Balanced middle-overs field: a lone slip keeps the edge in play while five boundary riders guard every scoring arc.",
       advantages: [
-        "Long-on & Long-off seal the straight hitting corridor",
-        "Deep Point, Deep Cover & Deep Third Man protect the wide off-side",
-        "Single slip keeps edge-catching alive with seam movement",
-        "Short Square Leg & Short Fine Leg apply infield pressure on the on-side",
+        "Long-off and Long-on seal the straight hitting corridor",
+        "Deep Point, Deep Cover and Third Man protect the wide off side",
+        "A single slip keeps edge-catching alive with any seam movement",
+        "Short Fine Leg cuts off the glance for a single",
       ],
       disadvantages: [
-        "Cow-corner / mid-wicket gap remains open for aggressive sweepers",
-        "A single slip limits catching variety compared to powerplay",
-        "Batters who hit straight early can exploit the mid-off gap",
+        "The midwicket boundary is unguarded — the slog sweep pays",
+        "One slip only, so a thick edge through the vacant cordon runs away",
+        "Infield is thin; batters can rotate strike almost at will",
       ],
     };
   }
@@ -158,17 +120,17 @@ export function getPresetInfo(
     return {
       title: "Pace Death Overs — Boundary Fortress",
       summary:
-        "Five-man boundary ring to concede as few fours and sixes as possible in the final overs. Infield pair placed to take catches off yorkers and full deliveries.",
+        "Five boundary riders on the rope for the closing overs, with four in the ring to take the mis-hit off a yorker.",
       advantages: [
-        "Five boundary riders cover all hitting arcs — Long-on, Long-off, Deep Cover, Deep Sq. Leg, Third Man",
-        "Short Fine Leg stops the fine glance and inside edge",
-        "Mid-wicket & Cover in catching position for full deliveries and mis-hits",
-        "Point cuts off the late cut and square drive",
+        "Five riders cover the straight, square and fine arcs",
+        "Short Fine Leg stops the scoop and the inside edge",
+        "Midwicket and Point stay up for the mistimed drive",
+        "Deep Backward Square Leg covers the pull",
       ],
       disadvantages: [
-        "Massive gaps in the infield — batters can run hard between the wickets",
-        "No slip means edges behind square go unpunished",
-        "Batters advancing down the track can loft into the mid-wicket gap",
+        "Huge gaps in the ring — ones and twos are there for the taking",
+        "No slip, so an edge behind square goes unpunished",
+        "Two fielders behind square on the leg side is the legal limit; no room to adjust",
       ],
     };
   }
@@ -177,36 +139,36 @@ export function getPresetInfo(
     return {
       title: "Spin Powerplay — Close-Catching Trap",
       summary:
-        "Aggressive spin choice in the powerplay with WK standing up to the stumps. Short Leg and Silly Mid-on create an on-side catching cordon while a single slip covers the off-edge.",
+        "Spin inside the powerplay with the keeper up to the stumps. Silly Mid-on applies close pressure while a slip covers the edge.",
       advantages: [
-        "WK standing up pressures the batter — no back-cut or charging down the track",
-        "Short Leg & Silly Mid-on trap the batter on the on-side with close catches",
-        "Slip catches edges off turn and bounce into the cordon",
-        "Surprise factor — unusual spin in powerplay can unsettle aggressive batters",
+        "Keeper up to the stumps pins the batter in the crease",
+        "Silly Mid-on takes the bat-pad chance",
+        "Slip covers the edge off turn and bounce",
+        "Surprise value against a batter set for pace",
       ],
       disadvantages: [
-        "Fine Leg & Third Man are the only boundary protection — any width gets punished",
-        "Slog sweeps and big hits over mid-wicket are not covered",
-        "Requires exceptional accuracy — a bad ball goes for maximum",
+        "Fine Leg and Third Man are the only boundary cover — width is punished",
+        "Nothing deep on the leg side for the slog sweep",
+        "Demands real accuracy; a short ball disappears",
       ],
     };
   }
 
   if (bowlerType === "Spin" && overType === "Non-Powerplay") {
     return {
-      title: `Spin ${format === "ODI" ? "ODI" : "T20"} Mid-Overs — Control Web`,
+      title: `Spin ${phase} Middle Overs — Control Web`,
       summary:
-        "Classic spin control field: Short Leg and Silly Mid-on apply close-catching pressure while five outfielders protect all boundary zones. Forces batters to play against the spin.",
+        "Classic spin control field: close catcher in, five out, forcing the batter to take a risk to score.",
       advantages: [
-        "Short Leg & Silly Mid-on create an on-side catching trap for sweeps and flicks",
-        "Five outfielders — Long-on, Long-off, Fine Leg, Deep Point, Deep Cover — seal the boundary",
-        "Lone slip keeps edge-catching alive against turn",
-        "Mid-on plugs the straight on-side for singles and low catches",
+        "Five boundary riders seal Long-on, Long-off, Fine Leg, Deep Point and Deep Cover",
+        "Silly Mid-on keeps the bat-pad chance alive",
+        "Lone slip stays in for the edge against the turn",
+        "Mid-on plugs the straight single",
       ],
       disadvantages: [
-        "Mid-wicket and cow-corner gaps exposed to big hitters",
-        "Slip takes a fielder away from the outfield — one boundary zone thinner",
-        "Effective only with consistent line and length from the spinner",
+        "Midwicket boundary is open to the sweep",
+        "The slip costs a fielder in the ring",
+        "Only works with a tight line — a rank ball is a boundary",
       ],
     };
   }
@@ -218,32 +180,32 @@ export function getPresetInfo(
         ? "Spin Test Match — Aggressive Catching Cordon"
         : "Spin Death Overs — Close Catcher Attack",
       summary: isTest
-        ? "High-risk Test match formation with five close catchers creating a 360° cordon — WK standing up, two slips, Leg Slip, Silly Point and Short Leg. Best used when the surface is spinning sharply."
-        : "An attacking spin field for death overs using close catchers and two boundary riders. High-risk, high-reward — works best when the spinner can land the ball on a precise spot.",
+        ? "High-risk Test field with catchers ringed around the bat — keeper up, two slips, Leg Slip and Short Leg. For a surface that is turning sharply."
+        : "Attacking spin field for the death, backing close catchers over boundary protection. High risk, high reward.",
       advantages: [
-        "Double slip cordon (1st & 2nd Slip) + Leg Slip covers all edges behind the wicket",
-        "Silly Point & Short Leg create a 360° catching trap around the batter",
-        "Mid-on & Mid-off catch drives, chips and top-edges off the pitch",
-        "Point cuts off the late cut and square drive",
+        "Two slips plus Leg Slip cover every edge behind the wicket",
+        "Short Leg takes the bat-pad chance on the turn",
+        "Mid-on and Mid-off catch the chip and the top edge",
+        "Point cuts off the cut and the square drive",
       ],
       disadvantages: isTest
         ? [
-            "Only Fine Leg & Long-on on the boundary — any big hit finds the fence",
-            "Requires sharp catching from all five close fielders",
-            "Not suitable for T20/ODI death overs — violates fielding circle restrictions",
+            "Only Fine Leg and Long-on on the rope — any clean hit finds the fence",
+            "Needs sharp catching from every close fielder",
+            "Five on the leg side is the legal maximum; the field cannot shift further",
           ]
         : [
-            "Boundary exposure is high — aggressive batters will target the outfield",
-            "Requires exceptional accuracy from the spinner to maintain pressure",
-            "A single bad delivery can change the momentum of the over",
+            "Boundary cover is minimal — a set batter will target the gaps",
+            "Requires exceptional accuracy to keep the pressure on",
+            "One loose ball swings the over",
           ],
     };
   }
 
   return {
     title: "Custom Formation",
-    summary: "A custom or Test-match field with no fielding restrictions applied.",
-    advantages: ["Fully flexible positioning — no circle or boundary limitations"],
-    disadvantages: ["Not suitable for limited-overs formats without adjustments"],
+    summary: "A custom field. Test matches apply no circle restrictions.",
+    advantages: ["Fully flexible positioning — no circle limitations in Test cricket"],
+    disadvantages: ["Check the limited-overs restrictions before using this in T20 or ODI"],
   };
 }

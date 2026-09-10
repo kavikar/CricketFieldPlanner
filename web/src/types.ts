@@ -1,11 +1,24 @@
+/** Which of the eleven a player is. Only "fielder" roles are draggable. */
+export type FielderRole = "bowler" | "keeper" | "fielder";
+
+/**
+ * A player on the field.
+ *
+ * `id` and `name` are IDENTITY — who this is. They never change when the player
+ * moves. Where the player is standing is derived from x/y at render time via
+ * `getPositionName()`, so it can never go stale the way the old baked-in
+ * `label` did.
+ */
 export interface Fielder {
-  id: string;
-  name: string;
-  label: string;
-  x: number; // percentage coordinates (0 to 100), center of field = (50, 50)
+  id: string; // stable slot id: "bowler" | "keeper" | "f1".."f9"
+  role: FielderRole;
+  name: string; // squad name, user-editable
+  x: number; // percentage coordinates (0 to 100), centre of field = (50, 50)
   y: number;
-  isWK?: boolean;
 }
+
+/** Squad names keyed by slot id. Persisted independently of field layout. */
+export type Roster = Record<string, string>;
 
 export interface PresetInfo {
   title: string;

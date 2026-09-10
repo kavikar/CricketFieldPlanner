@@ -4,7 +4,10 @@ import { getTacticalAdvice, MissingApiKeyError } from "./gemini";
 import { setApiKey } from "./apiKey";
 import type { Fielder, ValidationResult } from "../types";
 
-const players: Fielder[] = [{ id: "wk", name: "Wicketkeeper", label: "WK", x: 50, y: 60, isWK: true }];
+const players: Fielder[] = [
+  { id: "keeper", role: "keeper", name: "Keeper", x: 50, y: 60 },
+  { id: "f1", role: "fielder", name: "Player 1", x: 26, y: 81 },
+];
 const validation: ValidationResult = {
   isValid: true,
   outsideCircleCount: 0,
