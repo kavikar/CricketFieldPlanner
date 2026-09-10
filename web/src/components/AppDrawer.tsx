@@ -11,6 +11,7 @@ interface Props {
   onExport: () => void;
   onAdvisor: () => void;
   onReset: () => void;
+  onBetaSignup: () => void;
 }
 
 const FORMATS: Format[] = ["T20", "ODI", "Test"];
@@ -25,6 +26,7 @@ export default function AppDrawer({
   onExport,
   onAdvisor,
   onReset,
+  onBetaSignup,
 }: Props) {
   useEffect(() => {
     if (!open) return;
@@ -101,6 +103,9 @@ export default function AppDrawer({
 
           <section className="drawer-section">
             <h3 className="drawer-label">About</h3>
+            <button className="drawer-item" onClick={onBetaSignup}>
+              <span aria-hidden="true">📱</span> Join the Android beta
+            </button>
             <a className="drawer-item" href="/privacy.html" target="_blank" rel="noreferrer">
               <span aria-hidden="true">◇</span> Privacy policy
             </a>

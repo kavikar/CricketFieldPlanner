@@ -23,6 +23,9 @@ import SquadPanel from "./components/panels/SquadPanel";
 import RulesPanel from "./components/panels/RulesPanel";
 import ExportDialog from "./components/ExportDialog";
 import AdvisorDialog from "./components/AdvisorDialog";
+import BetaSignupDialog from "./components/BetaSignupDialog";
+import BetaBanner from "./components/BetaBanner";
+import { dismissBetaBanner, hasDismissedBetaBanner } from "./lib/betaSignup";
 import "./App.css";
 
 /** Mirror the whole field when the batter's handedness changes. */
@@ -58,6 +61,8 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showAdvisor, setShowAdvisor] = useState(false);
+  const [showBetaSignup, setShowBetaSignup] = useState(false);
+  const [showBetaBanner, setShowBetaBanner] = useState(() => !hasDismissedBetaBanner());
   const [saveSlotTarget, setSaveSlotTarget] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -171,6 +176,18 @@ export default function App() {
     showToast("Field loaded");
   };
 
+  const handleOpenBetaSignup = () => {
+    dismissBetaBanner();
+    setShowBetaBanner(false);
+    setDrawerOpen(false);
+    setShowBetaSignup(true);
+  };
+
+  const handleDismissBetaBanner = () => {
+    dismissBetaBanner();
+    setShowBetaBanner(false);
+  };
+
   const selectedPlayer = players.find((p) => p.id === selectedPlayerId) ?? null;
 
   const handleSelectFromSquad = (slotId: string) => {
@@ -180,32 +197,37 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <header className="app-bar">
-        <button
-          className="icon-btn"
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Open settings"
-          aria-expanded={drawerOpen}
-        >
-          <span className="hamburger" aria-hidden="true" />
-        </button>
+      <div className="app-top">
+        {showBetaBanner && (
+          <BetaBanner onSignUp={handleOpenBetaSignup} onDismiss={handleDismissBetaBanner} />
+        )}
+        <header className="app-bar">
+          <button
+            className="icon-btn"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open settings"
+            aria-expanded={drawerOpen}
+          >
+            <span className="hamburger" aria-hidden="true" />
+          </button>
 
-        <div className="app-bar-title">
-          <span className="app-title">Field Planner</span>
-          <span className="app-subtitle">
-            {format} · {phaseText(format, overType)} · {bowlerType}
-          </span>
-        </div>
+          <div className="app-bar-title">
+            <span className="app-title">Field Planner</span>
+            <span className="app-subtitle">
+              {format} · {phaseText(format, overType)} · {bowlerType}
+            </span>
+          </div>
 
-        <div
-          className={`status-pill ${validation.isValid ? "is-ok" : "is-bad"}`}
-          title={validation.isValid ? "Legal field" : validation.violations.join("; ")}
-        >
-          {validation.maxAllowedOutside === null
-            ? "No limit"
-            : `${validation.outsideCircleCount}/${validation.maxAllowedOutside} out`}
-        </div>
-      </header>
+          <div
+            className={`status-pill ${validation.isValid ? "is-ok" : "is-bad"}`}
+            title={validation.isValid ? "Legal field" : validation.violations.join("; ")}
+          >
+            {validation.maxAllowedOutside === null
+              ? "No limit"
+              : `${validation.outsideCircleCount}/${validation.maxAllowedOutside} out`}
+          </div>
+        </header>
+      </div>
 
       <main className="app-main">
         <div className="field-pane">
@@ -291,6 +313,7 @@ export default function App() {
           setDrawerOpen(false);
           handleReset();
         }}
+        onBetaSignup={handleOpenBetaSignup}
       />
 
       {showExport && (
@@ -316,6 +339,8 @@ export default function App() {
           onDismiss={() => setShowAdvisor(false)}
         />
       )}
+
+      {showBetaSignup && <BetaSignupDialog onDismiss={() => setShowBetaSignup(false)} />}
 
       {saveSlotTarget !== null && (
         <div className="modal-overlay" onClick={() => setSaveSlotTarget(null)}>

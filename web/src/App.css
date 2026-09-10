@@ -63,6 +63,78 @@ body {
   display: contents;
 }
 
+/* Banner and bar travel together so the shell grid keeps a fixed row count. */
+.app-top {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Beta signup banner -------------------------------------------------------- */
+
+.beta-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px 9px 14px;
+  background: rgba(61, 220, 132, 0.09);
+  border-bottom: 1px solid rgba(61, 220, 132, 0.22);
+}
+
+.beta-banner-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.beta-banner-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-dim);
+}
+
+.beta-banner-cta {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.beta-banner-close {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.beta-banner-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* Hidden from assistive tech too, not merely off-screen — bots that fill every
+   field trip it, real users never see it. */
+.honeypot-field {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .app-bar {
   display: flex;
   align-items: center;
@@ -1089,7 +1161,7 @@ body {
       "field tabs";
   }
 
-  .app-bar {
+  .app-top {
     grid-area: bar;
   }
 
