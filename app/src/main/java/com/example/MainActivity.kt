@@ -15,6 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -85,55 +86,55 @@ object FieldPresets {
                 when (overType) {
                     "Powerplay" -> listOf(
                         Fielder("wk", "Wicketkeeper", "WK", 50f, 72f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL1", 45f, 61f),
-                        Fielder("sl2", "2nd Slip", "SL2", 41f, 63f),
-                        Fielder("g", "Gully", "G", 36f, 60f),
-                        Fielder("p", "Point", "P", 28f, 50f),
-                        Fielder("c", "Cover", "C", 32f, 40f),
-                        Fielder("moff", "Mid-off", "MOff", 43f, 35f),
-                        Fielder("mon", "Mid-on", "MOn", 57f, 35f),
-                        Fielder("sl", "Square Leg", "SL", 68f, 54f),
-                        Fielder("fl", "Fine Leg (Deep)", "FL", 75f, 78f),
-                        Fielder("tm", "Third Man (Deep)", "TM", 24f, 76f)
+                        Fielder("sl1", "1st Slip", "SL1", 55f, 61f),
+                        Fielder("sl2", "2nd Slip", "SL2", 59f, 63f),
+                        Fielder("g", "Gully", "G", 64f, 60f),
+                        Fielder("p", "Point", "P", 72f, 50f),
+                        Fielder("c", "Cover", "C", 68f, 40f),
+                        Fielder("moff", "Mid-off", "MOff", 57f, 35f),
+                        Fielder("mon", "Mid-on", "MOn", 43f, 35f),
+                        Fielder("sl", "Square Leg", "SL", 32f, 54f),
+                        Fielder("fl", "Fine Leg (Deep)", "FL", 25f, 78f),
+                        Fielder("tm", "Third Man (Deep)", "TM", 76f, 76f)
                     )
                     "Non-Powerplay" -> listOf(
                         Fielder("wk", "Wicketkeeper", "WK", 50f, 72f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL1", 45f, 61f),
-                        Fielder("moff", "Mid-off", "MOff", 43f, 38f),
-                        Fielder("sl", "Square Leg (Short)", "SL", 66f, 56f),
-                        Fielder("fl", "Fine Leg (Short)", "FL", 62f, 68f),
-                        Fielder("mw", "Midwicket", "MW", 63f, 40f),
-                        Fielder("dtm", "Deep Third Man", "DTM", 18f, 76f),
-                        Fielder("dp", "Deep Point", "DP", 12f, 50f),
-                        Fielder("dc", "Deep Cover", "DC", 18f, 24f),
-                        Fielder("loff", "Long-off", "LOff", 40f, 10f),
-                        Fielder("lon", "Long-on", "LOn", 60f, 10f)
+                        Fielder("sl1", "1st Slip", "SL1", 55f, 61f),
+                        Fielder("moff", "Mid-off", "MOff", 57f, 38f),
+                        Fielder("sl", "Square Leg (Short)", "SL", 34f, 56f),
+                        Fielder("fl", "Fine Leg (Short)", "FL", 38f, 68f),
+                        Fielder("mw", "Midwicket", "MW", 37f, 40f),
+                        Fielder("dtm", "Deep Third Man", "DTM", 82f, 76f),
+                        Fielder("dp", "Deep Point", "DP", 88f, 50f),
+                        Fielder("dc", "Deep Cover", "DC", 82f, 24f),
+                        Fielder("loff", "Long-off", "LOff", 60f, 10f),
+                        Fielder("lon", "Long-on", "LOn", 40f, 10f)
                     )
                     "Death" -> listOf(
                         Fielder("wk", "Wicketkeeper", "WK", 50f, 74f, isWK = true),
-                        Fielder("sfl", "Short Fine Leg", "SFL", 58f, 65f),
-                        Fielder("mo", "Mid-off (Catching)", "MO", 43f, 38f),
-                        Fielder("mw", "Midwicket", "MW", 63f, 40f),
-                        Fielder("p", "Point", "P", 28f, 50f),
-                        Fielder("c", "Cover", "C", 32f, 40f),
-                        Fielder("dsql", "Deep Square Leg", "DSQL", 82f, 65f),
-                        Fielder("lon", "Long-on", "LOn", 60f, 10f),
-                        Fielder("loff", "Long-off", "LOff", 40f, 10f),
-                        Fielder("dc", "Deep Cover", "DC", 18f, 24f),
-                        Fielder("tm", "Third Man (Deep)", "TM", 18f, 76f)
+                        Fielder("sfl", "Short Fine Leg", "SFL", 42f, 65f),
+                        Fielder("mo", "Mid-off (Catching)", "MO", 57f, 38f),
+                        Fielder("mw", "Midwicket", "MW", 37f, 40f),
+                        Fielder("p", "Point", "P", 72f, 50f),
+                        Fielder("c", "Cover", "C", 68f, 40f),
+                        Fielder("dsql", "Deep Square Leg", "DSQL", 18f, 65f),
+                        Fielder("lon", "Long-on", "LOn", 40f, 10f),
+                        Fielder("loff", "Long-off", "LOff", 60f, 10f),
+                        Fielder("dc", "Deep Cover", "DC", 82f, 24f),
+                        Fielder("tm", "Third Man (Deep)", "TM", 82f, 76f)
                     )
                     else -> listOf(
                         Fielder("wk", "Wicketkeeper", "WK", 50f, 72f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL1", 45f, 61f),
-                        Fielder("sl2", "2nd Slip", "SL2", 41f, 63f),
-                        Fielder("g", "Gully", "G", 36f, 60f),
-                        Fielder("p", "Point", "P", 28f, 50f),
-                        Fielder("c", "Cover", "C", 32f, 40f),
-                        Fielder("moff", "Mid-off", "MOff", 43f, 35f),
-                        Fielder("mon", "Mid-on", "MOn", 57f, 35f),
-                        Fielder("sl", "Square Leg", "SL", 68f, 54f),
-                        Fielder("fl", "Fine Leg (Deep)", "FL", 75f, 78f),
-                        Fielder("tm", "Third Man (Deep)", "TM", 24f, 76f)
+                        Fielder("sl1", "1st Slip", "SL1", 55f, 61f),
+                        Fielder("sl2", "2nd Slip", "SL2", 59f, 63f),
+                        Fielder("g", "Gully", "G", 64f, 60f),
+                        Fielder("p", "Point", "P", 72f, 50f),
+                        Fielder("c", "Cover", "C", 68f, 40f),
+                        Fielder("moff", "Mid-off", "MOff", 57f, 35f),
+                        Fielder("mon", "Mid-on", "MOn", 43f, 35f),
+                        Fielder("sl", "Square Leg", "SL", 32f, 54f),
+                        Fielder("fl", "Fine Leg (Deep)", "FL", 25f, 78f),
+                        Fielder("tm", "Third Man (Deep)", "TM", 76f, 76f)
                     )
                 }
             }
@@ -141,55 +142,55 @@ object FieldPresets {
                 when (overType) {
                     "Powerplay" -> listOf(
                         Fielder("wk", "Wicketkeeper", "WK", 50f, 59.5f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL", 45f, 61f),
+                        Fielder("sl1", "1st Slip", "SL", 55f, 61f),
                         Fielder("smon", "Silly Mid-on", "SMOn", 46f, 52f),
-                        Fielder("c", "Cover", "C", 30f, 42f),
-                        Fielder("moff", "Mid-off", "MOff", 43f, 35f),
-                        Fielder("mon", "Mid-on", "MOn", 57f, 35f),
-                        Fielder("p", "Point", "P", 28f, 50f),
-                        Fielder("sl", "Square Leg", "SL", 68f, 54f),
-                        Fielder("fl", "Fine Leg", "FL", 62f, 68f),
-                        Fielder("tm", "Deep Third Man", "TM", 18f, 76f),
-                        Fielder("dmw", "Deep Midwicket", "DMW", 80f, 30f)
+                        Fielder("c", "Cover", "C", 70f, 42f),
+                        Fielder("moff", "Mid-off", "MOff", 57f, 35f),
+                        Fielder("mon", "Mid-on", "MOn", 43f, 35f),
+                        Fielder("p", "Point", "P", 72f, 50f),
+                        Fielder("sl", "Square Leg", "SL", 32f, 54f),
+                        Fielder("fl", "Fine Leg", "FL", 38f, 68f),
+                        Fielder("tm", "Deep Third Man", "TM", 82f, 76f),
+                        Fielder("dmw", "Deep Midwicket", "DMW", 20f, 30f)
                     )
                     "Non-Powerplay" -> listOf(
                         Fielder("wk", "Wicketkeeper", "WK", 50f, 59.5f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL", 45f, 61f),
-                        Fielder("slg", "Short Leg", "SLg", 54f, 57f),
+                        Fielder("sl1", "1st Slip", "SL", 55f, 61f),
+                        Fielder("slg", "Short Leg", "SLg", 46f, 57f),
                         Fielder("smon", "Silly Mid-on", "SMOn", 46f, 52f),
-                        Fielder("c", "Cover", "C", 30f, 42f),
-                        Fielder("fl", "Fine Leg", "FL", 62f, 68f),
-                        Fielder("lon", "Long-on", "LOn", 60f, 10f),
-                        Fielder("loff", "Long-off", "LOff", 40f, 10f),
-                        Fielder("dmw", "Deep Midwicket", "DMW", 80f, 28f),
-                        Fielder("dsl", "Deep Square Leg", "DSL", 82f, 65f),
-                        Fielder("dp", "Deep Point", "DP", 12f, 50f)
+                        Fielder("c", "Cover", "C", 70f, 42f),
+                        Fielder("fl", "Fine Leg", "FL", 38f, 68f),
+                        Fielder("lon", "Long-on", "LOn", 40f, 10f),
+                        Fielder("loff", "Long-off", "LOff", 60f, 10f),
+                        Fielder("dmw", "Deep Midwicket", "DMW", 20f, 28f),
+                        Fielder("dsl", "Deep Square Leg", "DSL", 18f, 65f),
+                        Fielder("dp", "Deep Point", "DP", 88f, 50f)
                     )
                     "Death" -> listOf( // "Spin - Attacking"
                         Fielder("wk", "Wicketkeeper", "WK", 50f, 59.5f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL1", 44f, 61f),
-                        Fielder("sl2", "2nd Slip", "SL2", 40f, 63f),
-                        Fielder("lsl", "Leg Slip", "LSl", 56f, 61f),
-                        Fielder("sp", "Silly Point", "SP", 44f, 55f),
-                        Fielder("slg", "Short Leg", "SLg", 54f, 57f),
-                        Fielder("mon", "Mid-on (Catching)", "MOn", 56f, 44f),
-                        Fielder("moff", "Mid-off (Catching)", "MOff", 44f, 44f),
-                        Fielder("p", "Point", "P", 28f, 50f),
-                        Fielder("fl", "Fine Leg", "FL", 62f, 68f),
-                        Fielder("lon", "Long-on (Deep)", "LOn", 60f, 10f)
+                        Fielder("sl1", "1st Slip", "SL1", 56f, 61f),
+                        Fielder("sl2", "2nd Slip", "SL2", 60f, 63f),
+                        Fielder("lsl", "Leg Slip", "LSl", 44f, 61f),
+                        Fielder("sp", "Silly Point", "SP", 56f, 55f),
+                        Fielder("slg", "Short Leg", "SLg", 46f, 57f),
+                        Fielder("mon", "Mid-on (Catching)", "MOn", 44f, 44f),
+                        Fielder("moff", "Mid-off (Catching)", "MOff", 56f, 44f),
+                        Fielder("p", "Point", "P", 72f, 50f),
+                        Fielder("fl", "Fine Leg", "FL", 38f, 68f),
+                        Fielder("lon", "Long-on (Deep)", "LOn", 40f, 10f)
                     )
                     else -> listOf(
                         Fielder("wk", "Wicketkeeper", "WK", 50f, 59.5f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL", 45f, 61f),
-                        Fielder("slg", "Short Leg", "SLg", 54f, 57f),
+                        Fielder("sl1", "1st Slip", "SL", 55f, 61f),
+                        Fielder("slg", "Short Leg", "SLg", 46f, 57f),
                         Fielder("smon", "Silly Mid-on", "SMOn", 46f, 52f),
-                        Fielder("c", "Cover", "C", 30f, 42f),
-                        Fielder("fl", "Fine Leg", "FL", 62f, 68f),
-                        Fielder("lon", "Long-on", "LOn", 60f, 10f),
-                        Fielder("loff", "Long-off", "LOff", 40f, 10f),
-                        Fielder("dmw", "Deep Midwicket", "DMW", 80f, 28f),
-                        Fielder("dsl", "Deep Square Leg", "DSL", 82f, 65f),
-                        Fielder("dp", "Deep Point", "DP", 12f, 50f)
+                        Fielder("c", "Cover", "C", 70f, 42f),
+                        Fielder("fl", "Fine Leg", "FL", 38f, 68f),
+                        Fielder("lon", "Long-on", "LOn", 40f, 10f),
+                        Fielder("loff", "Long-off", "LOff", 60f, 10f),
+                        Fielder("dmw", "Deep Midwicket", "DMW", 20f, 28f),
+                        Fielder("dsl", "Deep Square Leg", "DSL", 18f, 65f),
+                        Fielder("dp", "Deep Point", "DP", 88f, 50f)
                     )
                 }
             }
@@ -268,8 +269,9 @@ fun validateField(
     for (player in players) {
         if (!player.isWK) {
             val isBehindSquare = player.y > 58f
-            // If left handed batsman is active, leg side is LHS (X < 50f), else RHS (X > 50f)
-            val isLegSide = if (isLeftHanded) player.x < 50f else player.x > 50f
+            // Striker faces North from bottom:
+            // For RHB, leg-side is left (X < 50f); for LHB, leg-side is right (X > 50f)
+            val isLegSide = if (isLeftHanded) player.x > 50f else player.x < 50f
             if (isBehindSquare && isLegSide) {
                 legSideBehindSquareFielders.add(player)
             }
@@ -286,7 +288,8 @@ fun validateField(
     // 3. Leg-side total limit: max 5 fielders total on leg-side (all formats)
     val legSideFielders = mutableListOf<Fielder>()
     for (player in players) {
-        val isLegSide = if (isLeftHanded) player.x < 50f else player.x > 50f
+        // For RHB, leg-side is left (X < 50f); for LHB, leg-side is right (X > 50f)
+        val isLegSide = if (isLeftHanded) player.x > 50f else player.x < 50f
         if (isLegSide) {
             legSideFielders.add(player)
         }
@@ -323,13 +326,14 @@ fun getFielderZone(x: Float, y: Float, isLeftHanded: Boolean): String {
     }
 
     // Determine horizontal domain (Off vs Leg)
-    // Right Hander: Left (X<50) is Off, Right (X>50) is Leg
-    // Left Hander: Left (X<50) is Leg, Right (X>50) is Off
+    // Striker at bottom facing North:
+    // Right Hander (RHB): Left (X < 50) is Leg-side, Right (X > 50) is Off-side
+    // Left Hander (LHB): Left (X < 50) is Off-side, Right (X > 50) is Leg-side
     val isRHSideOfField = x > 50f
     val zoneSide = if (isLeftHanded) {
-        if (isRHSideOfField) "Off-side" else "Leg-side"
-    } else {
         if (isRHSideOfField) "Leg-side" else "Off-side"
+    } else {
+        if (isRHSideOfField) "Off-side" else "Leg-side"
     }
 
     val regionName = if (isDeep) "Deep Outfield" else "Infield Circle"
@@ -524,6 +528,7 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
                         .background(Color(0xFF1A1F2E), CircleShape)
                         .border(1.dp, Color(0xFF33353A), CircleShape)
                         .size(36.dp)
+                        .testTag("btn_share_export")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Share,
@@ -636,7 +641,12 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
                             onSaveClicked = { slot -> targetSaveSlot = slot },
                             onLoadClicked = { ser -> loadCustomPreset(ser) },
                             onClearPreset = { slot -> deleteCustomPreset(slot) },
-                            customPresets = listOf(customPreset1, customPreset2, customPreset3)
+                            customPresets = listOf(customPreset1, customPreset2, customPreset3),
+                            onPlayerPositionChanged = { id, newX, newY ->
+                                players = players.map {
+                                    if (it.id == id) it.copy(x = newX, y = newY) else it
+                                }
+                            }
                         )
                     }
                 }
@@ -722,7 +732,12 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
                             onSaveClicked = { slot -> targetSaveSlot = slot },
                             onLoadClicked = { ser -> loadCustomPreset(ser) },
                             onClearPreset = { slot -> deleteCustomPreset(slot) },
-                            customPresets = listOf(customPreset1, customPreset2, customPreset3)
+                            customPresets = listOf(customPreset1, customPreset2, customPreset3),
+                            onPlayerPositionChanged = { id, newX, newY ->
+                                players = players.map {
+                                    if (it.id == id) it.copy(x = newX, y = newY) else it
+                                }
+                            }
                         )
                     }
                 }
@@ -804,8 +819,39 @@ fun CricketFieldCanvas(
     ) {
         val widthPx = constraints.maxWidth.toFloat()
         val heightPx = constraints.maxHeight.toFloat()
-        // Base ground canvas drawing
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        val rxBoundary = widthPx * 0.46f
+        val ryBoundary = heightPx * 0.46f
+        val rField = min(rxBoundary, ryBoundary)
+        val centerXPx = widthPx / 2f
+        val centerYPx = heightPx / 2f
+
+        // Base ground canvas drawing with tap-to-move support
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(selectedPlayerId, widthPx, heightPx) {
+                    detectTapGestures { tapOffset ->
+                        if (selectedPlayerId != null) {
+                            val targetX = 50f + ((tapOffset.x - centerXPx) / (rField * 2.1f)) * 100f
+                            val targetY = 50f + ((tapOffset.y - centerYPx) / (rField * 2.1f)) * 100f
+
+                            val ox = targetX - 50f
+                            val oy = targetY - 50f
+                            val limitRad = 47.5f
+                            val dist = sqrt(ox * ox + oy * oy)
+
+                            val clampedX = if (dist > limitRad) 50f + (ox / dist) * limitRad else targetX
+                            val clampedY = if (dist > limitRad) 50f + (oy / dist) * limitRad else targetY
+
+                            onPlayerPositionChanged(
+                                selectedPlayerId,
+                                clampedX.coerceIn(2.5f, 97.5f),
+                                clampedY.coerceIn(2.5f, 97.5f)
+                            )
+                        }
+                    }
+                }
+        ) {
             val center = Offset(size.width / 2f, size.height / 2f)
 
             // Dynamic safe scaling radii
@@ -949,6 +995,50 @@ fun CricketFieldCanvas(
             }
         }
 
+        // Side Indicators: LEG / ON side vs OFF side
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val leftSideName = if (isLeftHanded) "OFF SIDE" else "LEG (ON) SIDE"
+            val rightSideName = if (isLeftHanded) "LEG (ON) SIDE" else "OFF SIDE"
+
+            Box(
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                    .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "◀ $leftSideName",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFD1E1FF),
+                    letterSpacing = 0.8.sp
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                    .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "$rightSideName ▶",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFD1E1FF),
+                    letterSpacing = 0.8.sp
+                )
+            }
+        }
+
         // Render draggable interactive fielders on top
         players.forEach { player ->
             // Convert relative percentages coordinates (0..100) to absolute local pixels
@@ -969,6 +1059,13 @@ fun CricketFieldCanvas(
             val isSelected = player.id == selectedPlayerId
             val isViolating = validation.illegalFielderIds.contains(player.id)
 
+            var dragX by remember(player.id) { mutableFloatStateOf(player.x) }
+            var dragY by remember(player.id) { mutableFloatStateOf(player.y) }
+            LaunchedEffect(player.x, player.y) {
+                dragX = player.x
+                dragY = player.y
+            }
+
             // Outer hit box container
             val fielderRadiusPx = with(density) { 24.dp.toPx() }
             Box(
@@ -981,9 +1078,13 @@ fun CricketFieldCanvas(
                         )
                     }
                     .size(48.dp)
-                    .pointerInput(player.id) {
+                    .pointerInput(player.id, rField) {
                         detectDragGestures(
-                            onDragStart = { onPlayerSelected(player.id) },
+                            onDragStart = {
+                                dragX = player.x
+                                dragY = player.y
+                                onPlayerSelected(player.id)
+                            },
                             onDrag = { change, dragAmount ->
                                 change.consume()
 
@@ -991,28 +1092,23 @@ fun CricketFieldCanvas(
                                 val dxPercent = (dragAmount.x / (rField * 2.1f)) * 100f
                                 val dyPercent = (dragAmount.y / (rField * 2.1f)) * 100f
 
-                                var nextX = player.x + dxPercent
-                                var nextY = player.y + dyPercent
+                                dragX += dxPercent
+                                dragY += dyPercent
 
-                                // Clamp logic based on general outer boundary (approx ellipse radius 44%)
-                                val ox = nextX - 50f
-                                val oy = nextY - 50f
-                                val limitRad = 44f
+                                // Clamp logic based on general outer boundary (allowing full reach to 47.5%)
+                                val ox = dragX - 50f
+                                val oy = dragY - 50f
+                                val limitRad = 47.5f
                                 val distFromCenter = sqrt(ox * ox + oy * oy)
 
-                                if (distFromCenter > limitRad) {
-                                    nextX = 50f + (ox / distFromCenter) * limitRad
-                                    nextY = 50f + (oy / distFromCenter) * limitRad
-                                }
+                                val nextX = if (distFromCenter > limitRad) 50f + (ox / distFromCenter) * limitRad else dragX
+                                val nextY = if (distFromCenter > limitRad) 50f + (oy / distFromCenter) * limitRad else dragY
 
-                                // Strictest rule constraint: "Wicketkeeper always behind stumps — not draggable beyond crease"
-                                // Bottom crease (Y = 58%). Behind stumps is Y >= 58.5%. Clamping WK.
-                                if (player.isWK) {
-                                    nextY = max(58.5f, nextY)
-                                    nextX = nextX.coerceIn(34f, 66f) // Keep WK centered behind wickets
-                                }
-
-                                onPlayerPositionChanged(player.id, nextX, nextY)
+                                onPlayerPositionChanged(
+                                    player.id,
+                                    nextX.coerceIn(2.5f, 97.5f),
+                                    nextY.coerceIn(2.5f, 97.5f)
+                                )
                             }
                         )
                     },
@@ -1089,6 +1185,7 @@ fun ControlsDrawer(
     onLoadClicked: (String) -> Unit,
     onClearPreset: (Int) -> Unit,
     customPresets: List<String?>,
+    onPlayerPositionChanged: ((String, Float, Float) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -1118,7 +1215,7 @@ fun ControlsDrawer(
                         .background(Color(0xFF0E1117), RoundedCornerShape(12.dp))
                         .border(1.dp, Color(0xFF33353A), RoundedCornerShape(12.dp))
                         .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1153,6 +1250,78 @@ fun ControlsDrawer(
                         fontFamily = FontFamily.Monospace,
                         color = Color(0xFFA8ABB4).copy(alpha = 0.6f)
                     )
+
+                    // Fine-tuning nudge buttons and quick positions
+                    if (onPlayerPositionChanged != null) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Fine-Tune Position (Drag or Nudge):",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFE2E8F0)
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF222838))
+                                    .clickable {
+                                        val newX = (selectedPlayer.x - 2.5f).coerceIn(4f, 96f)
+                                        onPlayerPositionChanged(selectedPlayer.id, newX, selectedPlayer.y)
+                                    }
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("◀ Left", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF222838))
+                                    .clickable {
+                                        val newX = (selectedPlayer.x + 2.5f).coerceIn(4f, 96f)
+                                        onPlayerPositionChanged(selectedPlayer.id, newX, selectedPlayer.y)
+                                    }
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Right ▶", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF222838))
+                                    .clickable {
+                                        val newY = (selectedPlayer.y - 2.5f).coerceIn(4f, 96f)
+                                        onPlayerPositionChanged(selectedPlayer.id, selectedPlayer.x, newY)
+                                    }
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("▲ Up", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF222838))
+                                    .clickable {
+                                        val newY = (selectedPlayer.y + 2.5f).coerceIn(4f, 96f)
+                                        onPlayerPositionChanged(selectedPlayer.id, selectedPlayer.x, newY)
+                                    }
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Down ▼", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1318,38 +1487,69 @@ fun ControlsDrawer(
             }
         }
 
-        // Left hand batter switch
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF0E1117))
-                .border(1.dp, Color(0xFF33353A), RoundedCornerShape(12.dp))
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        // Batter Stance (Handedness) Selector
+        Column(
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Column {
-                Text(
-                    text = "Left-Hand Batter (Mirror)",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 12.sp,
-                    color = Color.White
-                )
-                Text(
-                    text = "Swaps off-side and leg-side channels",
-                    fontSize = 10.sp,
-                    color = Color(0xFFA8ABB4)
-                )
+            Text(
+                text = "BATTER STANCE (HANDEDNESS)",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFA8ABB4),
+                letterSpacing = 1.sp,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF0E1117), CircleShape)
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(CircleShape)
+                        .background(if (!isLeftHanded) Color(0xFFD1E1FF) else Color.Transparent)
+                        .clickable {
+                            if (isLeftHanded) onMirrorToggled(false)
+                        }
+                        .padding(vertical = 8.dp)
+                        .testTag("tab_rhb"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🏏 Right-Hand (RHB)",
+                        fontWeight = FontWeight.Bold,
+                        color = if (!isLeftHanded) Color(0xFF002D6E) else Color(0xFFA8ABB4),
+                        fontSize = 11.sp
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(CircleShape)
+                        .background(if (isLeftHanded) Color(0xFFD1E1FF) else Color.Transparent)
+                        .clickable {
+                            if (!isLeftHanded) onMirrorToggled(true)
+                        }
+                        .padding(vertical = 8.dp)
+                        .testTag("lh_switch"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🏏 Left-Hand (LHB)",
+                        fontWeight = FontWeight.Bold,
+                        color = if (isLeftHanded) Color(0xFF002D6E) else Color(0xFFA8ABB4),
+                        fontSize = 11.sp
+                    )
+                }
             }
-            Switch(
-                checked = isLeftHanded,
-                onCheckedChange = onMirrorToggled,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color(0xFFFFB900),
-                    checkedTrackColor = Color(0xFF404859)
-                ),
-                modifier = Modifier.testTag("lh_switch")
+            Text(
+                text = if (isLeftHanded) "Active: Left-Hand Batter (Left is Off-side ◀ | Right is Leg-side ▶)" else "Active: Right-Hand Batter (Left is Leg-side ◀ | Right is Off-side ▶)",
+                fontSize = 10.sp,
+                color = Color(0xFFA8ABB4),
+                modifier = Modifier.padding(start = 6.dp)
             )
         }
 
