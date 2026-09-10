@@ -1,4 +1,4 @@
-package com.example
+package com.cricketfieldplanner.app
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
@@ -10,7 +10,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
-import com.example.ui.theme.MyApplicationTheme
+import com.cricketfieldplanner.app.ui.theme.MyApplicationTheme
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Rule
@@ -23,7 +23,7 @@ import org.robolectric.annotation.GraphicsMode
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = RobolectricDeviceQualifiers.Pixel8, sdk = [36])
-class GreetingScreenshotTest {
+class PlayStoreScreenshotTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -40,7 +40,6 @@ class GreetingScreenshotTest {
     }
 
     composeTestRule.waitForIdle()
-    composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/playstore_screenshot_1_t20_powerplay.png")
     composeTestRule.onRoot().captureRoboImage(filePath = "../assets/playstore_screenshots/playstore_screenshot_1_t20_powerplay.png")
   }
 
@@ -58,7 +57,6 @@ class GreetingScreenshotTest {
 
     composeTestRule.onNodeWithTag("tab_bowler_Spin").performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/playstore_screenshot_2_spin_tactics.png")
     composeTestRule.onRoot().captureRoboImage(filePath = "../assets/playstore_screenshots/playstore_screenshot_2_spin_tactics.png")
   }
 
@@ -76,7 +74,6 @@ class GreetingScreenshotTest {
 
     composeTestRule.onNodeWithTag("tab_over_Death").performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/playstore_screenshot_3_death_overs.png")
     composeTestRule.onRoot().captureRoboImage(filePath = "../assets/playstore_screenshots/playstore_screenshot_3_death_overs.png")
   }
 
@@ -94,7 +91,6 @@ class GreetingScreenshotTest {
 
     composeTestRule.onNodeWithTag("lh_switch").performClick()
     composeTestRule.waitForIdle()
-    composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/playstore_screenshot_4_left_hand_mirror.png")
     composeTestRule.onRoot().captureRoboImage(filePath = "../assets/playstore_screenshots/playstore_screenshot_4_left_hand_mirror.png")
   }
 }

@@ -1,5 +1,5 @@
 import type { BowlerType, Fielder, Format, OverType, ValidationResult } from "../types";
-import { getFielderZone } from "./validation";
+import { getPositionName, isOutsideCircle } from "./positions";
 import { getApiKey } from "./apiKey";
 
 const MODEL = "gemini-2.5-flash";
@@ -24,7 +24,15 @@ export async function getTacticalAdvice(
   if (!apiKey) throw new MissingApiKeyError();
 
   const fieldSummary = players
-    .map((p) => `- ${p.label} (${p.name}): X:${Math.round(p.x)}% Y:${Math.round(p.y)}% [${getFielderZone(p.x, p.y, isLeftHanded)}]`)
+    .map((p) => {
+      const where =
+        p.role === "bowler"
+          ? "Bowler (at the stumps)"
+          : p.role === "keeper"
+            ? "Wicketkeeper"
+            : `${getPositionName(p.x, p.y, isLeftHanded)}${isOutsideCircle(p.x, p.y) ? ", outside the circle" : ""}`;
+      return `- ${p.name}: ${where}`;
+    })
     .join("\n");
 
   const prompt = `You are a cricket tactics analyst. Given the fielding setup below, give a short (max 120 words) assessment: is it well suited to the situation, and up to 2 concrete tweaks to consider. Be concise and use cricket terminology.

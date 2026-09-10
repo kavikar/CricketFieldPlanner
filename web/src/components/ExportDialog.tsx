@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { BowlerType, Fielder, Format, OverType, ValidationResult } from "../types";
-import { getFielderZone } from "../lib/validation";
+import { getPositionName, isOutsideCircle } from "../lib/positions";
 
 interface Props {
   players: Fielder[];
@@ -25,16 +25,24 @@ export default function ExportDialog({
 
   const planText = useMemo(() => {
     const lines: string[] = [];
-    lines.push("🏏 TACTICAL OVAL FIELD PLAN 🏏");
-    lines.push("=============================");
-    lines.push(`Format: ${format} | Bowler: ${bowlerType}`);
-    lines.push(`Phase: ${overType} | Batter: ${isLeftHanded ? "LHB" : "RHB"}`);
-    lines.push(`Compliance: ${validation.isValid ? "LEGAL ✅" : "ILLEGAL ❌"}`);
-    lines.push(`Outfielders: ${validation.outsideCircleCount} inside play`);
-    lines.push("-----------------------------");
+    lines.push("CRICKET FIELD PLAN");
+    lines.push(`${format} | ${overType === "Non-Powerplay" ? "Middle overs" : overType} | ${bowlerType}`);
+    lines.push(`Batter: ${isLeftHanded ? "Left hand" : "Right hand"}`);
+    lines.push(validation.isValid ? "Legal field" : `ILLEGAL: ${validation.violations.join("; ")}`);
+    lines.push(
+      `Outside the circle: ${validation.outsideCircleCount}${
+        validation.maxAllowedOutside !== null ? ` of ${validation.maxAllowedOutside} allowed` : ""
+      }`,
+    );
+    lines.push("");
     for (const p of players) {
-      const zone = getFielderZone(p.x, p.y, isLeftHanded);
-      lines.push(`- ${p.label} (${p.name}): X:${Math.round(p.x)}% Y:${Math.round(p.y)}% [${zone}]`);
+      const where =
+        p.role === "bowler"
+          ? "Bowler"
+          : p.role === "keeper"
+            ? "Wicketkeeper"
+            : getPositionName(p.x, p.y, isLeftHanded);
+      lines.push(`- ${p.name}: ${where}`);
     }
     return lines.join("\n");
   }, [players, format, overType, bowlerType, isLeftHanded, validation]);
@@ -49,11 +57,24 @@ export default function ExportDialog({
   };
 
   const handleDownloadCsv = () => {
-    const header = "id,name,label,x,y,isWK,zone";
-    const rows = players.map(
-      (p) =>
-        `${p.id},${p.name},${p.label},${p.x.toFixed(1)},${p.y.toFixed(1)},${p.isWK ? 1 : 0},${getFielderZone(p.x, p.y, isLeftHanded)}`,
-    );
+    const header = "slot,name,role,position,x,y,outside_circle";
+    const rows = players.map((p) => {
+      const where =
+        p.role === "bowler"
+          ? "Bowler"
+          : p.role === "keeper"
+            ? "Wicketkeeper"
+            : getPositionName(p.x, p.y, isLeftHanded);
+      return [
+        p.id,
+        JSON.stringify(p.name),
+        p.role,
+        JSON.stringify(where),
+        p.x.toFixed(1),
+        p.y.toFixed(1),
+        isOutsideCircle(p.x, p.y) ? 1 : 0,
+      ].join(",");
+    });
     const csv = [header, ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -70,19 +91,19 @@ export default function ExportDialog({
     <div className="modal-overlay" onClick={onDismiss}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <span className="modal-title">TACTICAL EXPORT SUMMARY</span>
+          <span className="modal-title">Export plan</span>
           <button className="icon-btn" onClick={onDismiss} aria-label="Close">
             ✕
           </button>
         </div>
         <p className="modal-subtext">
-          A digital copy of your tactical field setting has been formatted and is ready for export.
+          Copy the plan as text, or download it as a spreadsheet.
         </p>
         <pre className="export-log">{planText}</pre>
         {copyStatus && <div className="copy-status">{copyStatus}</div>}
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={handleCopy}>
-            Copy Plan
+            Copy plan
           </button>
           <button className="btn btn-secondary" onClick={handleDownloadCsv}>
             Download CSV

@@ -1,27 +1,59 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Cricket Field Planner
 
-# Run and deploy your AI Studio app
+A tactical field-setting designer for cricket captains and coaches. Place fielders on
+an interactive ground, validate the setup against ICC fielding regulations for
+T20 / ODI / Test, load tactical presets, mirror the field for left-handed batters,
+and export a plan.
 
-This contains everything you need to run your app locally.
+Two implementations live in this repo:
 
-View your app in AI Studio: https://ai.studio/apps/2b900d10-db08-48f9-b72a-fba1e7f37f9b
+| | Path | Stack |
+| --- | --- | --- |
+| Android app | [`app/`](app) | Kotlin + Jetpack Compose |
+| Web app | [`web/`](web) | React + TypeScript + Vite |
 
-## Run Locally
+The web app's field logic (presets, ICC validation, zone labeling) is ported from the
+Android app's `MainActivity.kt`.
 
-**Prerequisites:**  [Android Studio](https://developer.android.com/studio)
+## Android
 
+**Prerequisites:** [Android Studio](https://developer.android.com/studio), JDK 21.
 
-1. Open Android Studio
-2. Select **Open** and choose the directory containing this project
-3. Allow Android Studio to fix any incompatibilities as it imports the project.
-4. Run the app on an emulator or physical device
+1. Open Android Studio, choose **Open**, and select this directory.
+2. Run the app on an emulator or device.
 
-`.env` / `GEMINI_API_KEY` (see `.env.example`) is scaffolding for an AI Advisor feature that isn't wired up on Android yet — see the "AI Advice — Coming Soon" badge in the app. It's not needed to build or run the app today. The web version already has this feature; see [`web/`](web).
+Or from the command line, using the checked-in Gradle wrapper:
 
-You can also build from the command line with the checked-in Gradle wrapper: `./gradlew assembleDebug`.
+```bash
+./gradlew assembleDebug        # debug APK
+./gradlew testDebugUnitTest    # Robolectric unit tests
+```
 
-## Web version
+`testDebugUnitTest` also regenerates the Play Store screenshots in
+[`assets/playstore_screenshots/`](assets/playstore_screenshots) via Roborazzi.
 
-A React + TypeScript web version of this app lives in [`web/`](web). See [`web/README.md`](web/README.md) for setup instructions.
+The app requests no permissions, makes no network calls, and stores its custom presets
+in `SharedPreferences` on the device only.
+
+## Web
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+See [`web/README.md`](web/README.md) for details. The web app additionally offers an
+**AI Advice** tactical advisor on a bring-your-own-key basis: the visitor pastes their
+own [Gemini API key](https://aistudio.google.com/apikey), it is kept only in their
+browser's `localStorage`, and the browser calls Google's API directly — the key never
+reaches a server of ours. There is nothing to configure at build time.
+
+On Android the same feature is still a placeholder (the "AI Advice — Coming Soon"
+badge), so it needs no key or configuration there either.
+
+## Release
+
+See [`PLAY_STORE_SUBMISSION.md`](PLAY_STORE_SUBMISSION.md) for the Play Console
+content-rating and Data Safety answers, the store-listing asset checklist, and
+signing notes.

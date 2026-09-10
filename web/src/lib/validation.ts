@@ -1,4 +1,22 @@
 import type { Fielder, Format, OverType, ValidationResult } from "../types";
+import { CENTRE, getPositionName, isOutsideCircle } from "./positions";
+
+/**
+ * Fielding restrictions are written in terms of *fielders*: the bowler is at the
+ * stumps and the keeper is behind them, so neither counts toward the circle or
+ * leg-side limits. Only role "fielder" is counted below.
+ */
+function fieldersOnly(players: Fielder[]): Fielder[] {
+  return players.filter((p) => p.role === "fielder");
+}
+
+/** Behind square on the leg side, from the striker's point of view. */
+function isLegSide(player: Fielder, isLeftHanded: boolean): boolean {
+  if (player.x === CENTRE) return false;
+  return isLeftHanded ? player.x > CENTRE : player.x < CENTRE;
+}
+
+const BEHIND_SQUARE_Y = 58; // the striker's crease
 
 export function validateField(
   players: Fielder[],
@@ -8,76 +26,49 @@ export function validateField(
 ): ValidationResult {
   const violations: string[] = [];
   const illegalFielderIds = new Set<string>();
+  const fielders = fieldersOnly(players);
 
-  // 1. Calculate how many players are outside the 30-yard circle (radius 25)
-  let outsideCount = 0;
-  const outsideFielders: Fielder[] = [];
-
-  for (const player of players) {
-    const dx = player.x - 50;
-    const dy = player.y - 50;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > 25) {
-      outsideCount++;
-      outsideFielders.push(player);
-    }
-  }
+  // 1. Fielders outside the 30-yard circle
+  const outsideFielders = fielders.filter((p) => isOutsideCircle(p.x, p.y));
+  const outsideCount = outsideFielders.length;
 
   let maxAllowedOutside: number | null;
   if (format === "T20") {
-    maxAllowedOutside =
-      overType === "Powerplay" ? 2 : overType === "Non-Powerplay" ? 5 : overType === "Death" ? 5 : 5;
+    // Overs 1-6 are the powerplay (max 2 out); 7-20 allow 5.
+    maxAllowedOutside = overType === "Powerplay" ? 2 : 5;
   } else if (format === "ODI") {
-    maxAllowedOutside =
-      overType === "Powerplay" ? 2 : overType === "Non-Powerplay" ? 4 : overType === "Death" ? 5 : 4;
+    // Overs 1-10 max 2 out, 11-40 max 4, 41-50 max 5.
+    maxAllowedOutside = overType === "Powerplay" ? 2 : overType === "Death" ? 5 : 4;
   } else {
-    maxAllowedOutside = null;
+    maxAllowedOutside = null; // Test cricket has no circle restriction
   }
 
+  if (maxAllowedOutside !== null && outsideCount > maxAllowedOutside) {
+    violations.push(
+      `Too many fielders outside the circle: ${outsideCount} out, max ${maxAllowedOutside} allowed`,
+    );
+    for (const p of outsideFielders) illegalFielderIds.add(p.id);
+  }
+
+  // 2. Max 2 fielders behind square on the leg side (all formats). Breaching this
+  //    is a no-ball, not just a bad field.
+  const behindSquareLeg = fielders.filter(
+    (p) => p.y > BEHIND_SQUARE_Y && isLegSide(p, isLeftHanded),
+  );
+  if (behindSquareLeg.length > 2) {
+    violations.push(
+      `No-ball: ${behindSquareLeg.length} fielders behind square on the leg side, max 2 allowed`,
+    );
+    for (const p of behindSquareLeg) illegalFielderIds.add(p.id);
+  }
+
+  // 3. Max 5 fielders on the leg side (limited overs).
   if (maxAllowedOutside !== null) {
-    if (outsideCount > maxAllowedOutside) {
-      violations.push(
-        `Too many outfielders: max ${maxAllowedOutside} allowed, currently has ${outsideCount}`,
-      );
-      for (const player of outsideFielders) illegalFielderIds.add(player.id);
+    const legSide = fielders.filter((p) => isLegSide(p, isLeftHanded));
+    if (legSide.length > 5) {
+      violations.push(`Leg-side limit: ${legSide.length} fielders on the leg side, max 5 allowed`);
+      for (const p of legSide) illegalFielderIds.add(p.id);
     }
-
-    const insideCount = players.length - outsideCount;
-    if (insideCount < 2) {
-      violations.push("At least 2 fielders must remain inside the 30-yard circle");
-    }
-  }
-
-  // 2. Leg-side behind square rule (all formats): max 2 fielders behind square on leg-side (excluding WK)
-  // Bird's-eye view convention: for RHB off-side=right(x>50), leg-side=left(x<50); mirrored for LHB
-  const legSideBehindSquareFielders: Fielder[] = [];
-  for (const player of players) {
-    if (!player.isWK) {
-      const isBehindSquare = player.y > 58;
-      const isLegSide = isLeftHanded ? player.x > 50 : player.x < 50;
-      if (isBehindSquare && isLegSide) legSideBehindSquareFielders.push(player);
-    }
-  }
-
-  if (legSideBehindSquareFielders.length > 2) {
-    violations.push(
-      `Leg-side square limit: max 2 behind square leg, currently has ${legSideBehindSquareFielders.length}`,
-    );
-    for (const player of legSideBehindSquareFielders) illegalFielderIds.add(player.id);
-  }
-
-  // 3. Leg-side total limit: max 5 fielders total on leg-side (all formats)
-  const legSideFielders: Fielder[] = [];
-  for (const player of players) {
-    const isLegSide = isLeftHanded ? player.x > 50 : player.x < 50;
-    if (isLegSide) legSideFielders.push(player);
-  }
-
-  if (legSideFielders.length > 5) {
-    violations.push(
-      `Leg-side overcrowding: max 5 total allowed on leg-side, currently has ${legSideFielders.length}`,
-    );
-    for (const player of legSideFielders) illegalFielderIds.add(player.id);
   }
 
   return {
@@ -89,26 +80,12 @@ export function validateField(
   };
 }
 
+/**
+ * A human description of where a player is standing, e.g.
+ * "Deep Midwicket (Leg side, outside the circle)".
+ */
 export function getFielderZone(x: number, y: number, isLeftHanded: boolean): string {
-  const dx = x - 50;
-  const dy = y - 50;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  const isDeep = dist > 25;
-
-  const vertLabel =
-    y > 58 ? "Behind Crease (Back)" : y >= 42 && y <= 58 ? "Square of Wicket" : "In Front of Crease (Forward)";
-
-  // Bird's-eye: right(x>50) = off-side for RHB, left(x<50) = leg-side for RHB; swapped for LHB
-  const isRHSideOfField = x > 50;
-  const zoneSide = isLeftHanded
-    ? isRHSideOfField
-      ? "Leg-side"
-      : "Off-side"
-    : isRHSideOfField
-      ? "Off-side"
-      : "Leg-side";
-
-  const regionName = isDeep ? "Deep Outfield" : "Infield Circle";
-
-  return `${zoneSide} ${vertLabel} (${regionName})`;
+  const name = getPositionName(x, y, isLeftHanded);
+  const depth = isOutsideCircle(x, y) ? "outside the circle" : "inside the circle";
+  return `${name} (${depth})`;
 }

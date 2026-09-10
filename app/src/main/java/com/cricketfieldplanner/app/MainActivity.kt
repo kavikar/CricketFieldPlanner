@@ -1,4 +1,4 @@
-package com.example
+package com.cricketfieldplanner.app
 
 import android.content.Context
 import android.content.Intent
@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.ui.theme.MyApplicationTheme
+import com.cricketfieldplanner.app.ui.theme.MyApplicationTheme
 import kotlin.math.*
 
 // Shared with the web app (web/public/privacy.html) — one policy, two apps.
