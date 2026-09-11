@@ -12,8 +12,10 @@ Two implementations live in this repo:
 | Android app | [`app/`](app) | Kotlin + Jetpack Compose |
 | Web app | [`web/`](web) | React + TypeScript + Vite |
 
-The web app's field logic (presets, ICC validation, zone labeling) is ported from the
-Android app's `MainActivity.kt`.
+Both apps share the same field-logic design — a 31-anchor canonical position table,
+six named tactical presets, and a bowler/keeper held as fixed, non-draggable roles
+rather than baked-in labels — kept in sync by hand across `web/src/lib/positions.ts`
+and `app/src/main/java/.../MainActivity.kt`'s equivalent objects.
 
 ## Android
 
