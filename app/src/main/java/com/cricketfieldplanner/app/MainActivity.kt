@@ -66,15 +66,23 @@ const val SUPPORT_EMAIL = "support@cricketfieldplanner.com"
 
 // ==========================================
 // DATA MODELS
+//
+// `id` and `name` are IDENTITY — who this is. They never change when the
+// player moves. Where they're standing is derived from x/y at render time
+// via describePosition(), so it can never go stale the way a baked-in
+// label used to (see the web app's lib/positions.ts for the shared design
+// this mirrors). Only role FIELDER is draggable; BOWLER and KEEPER hold
+// fixed stations.
 // ==========================================
 
+enum class FielderRole { BOWLER, KEEPER, FIELDER }
+
 data class Fielder(
-    val id: String,
-    val name: String,
-    val label: String,
+    val id: String, // stable slot id: "bowler" | "keeper" | "f1".."f9"
+    val role: FielderRole,
+    val name: String, // squad name, user-editable
     val x: Float, // percentage coordinates (0 to 100)
-    val y: Float,
-    val isWK: Boolean = false
+    val y: Float
 )
 
 data class ValidationResults(
@@ -86,132 +94,260 @@ data class ValidationResults(
 )
 
 // ==========================================
-// PRESET BUILDER
+// CANONICAL FIELDING POSITIONS
+//
+// Field geometry (bird's-eye, bowling end at top): centre = (50, 50),
+// striker's stumps ~ (50, 58), bowler's stumps ~ (50, 41), 30-yard circle
+// radius 25. Anchors are authored for a RIGHT-handed batter (off-side is
+// x > 50); for a left-hander the query point is mirrored back into
+// right-hander space rather than duplicating the table.
+//
+// Naming is nearest-anchor: a fielder between cover and point genuinely is
+// "somewhere around cover point", so the name is always computed, never
+// hand-assigned, and can't drift out of sync with where a player actually is.
+//
+// The bowler and keeper's fixed spots sit close to real fielding anchors
+// purely because of where those roles stand on a real pitch — always route
+// through describePosition() rather than getPositionName() directly, or a
+// bowler/keeper will be mislabelled with whatever position their spot
+// happens to be nearest to.
 // ==========================================
 
-object FieldPresets {
-    fun getPreset(bowlerType: String, overType: String, format: String): List<Fielder> {
-        return when (bowlerType) {
-            "Pace" -> {
-                when (overType) {
-                    "Powerplay" -> listOf(
-                        Fielder("wk", "Wicketkeeper", "WK", 50f, 72f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL1", 55f, 61f),
-                        Fielder("sl2", "2nd Slip", "SL2", 59f, 63f),
-                        Fielder("g", "Gully", "G", 64f, 60f),
-                        Fielder("p", "Point", "P", 72f, 50f),
-                        Fielder("c", "Cover", "C", 68f, 40f),
-                        Fielder("moff", "Mid-off", "MOff", 57f, 35f),
-                        Fielder("mon", "Mid-on", "MOn", 43f, 35f),
-                        Fielder("sl", "Square Leg", "SL", 32f, 54f),
-                        Fielder("fl", "Fine Leg (Deep)", "FL", 25f, 78f),
-                        Fielder("tm", "Third Man (Deep)", "TM", 76f, 76f)
-                    )
-                    "Non-Powerplay" -> listOf(
-                        Fielder("wk", "Wicketkeeper", "WK", 50f, 72f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL1", 55f, 61f),
-                        Fielder("moff", "Mid-off", "MOff", 57f, 38f),
-                        Fielder("sl", "Square Leg (Short)", "SL", 34f, 56f),
-                        Fielder("fl", "Fine Leg (Short)", "FL", 38f, 68f),
-                        Fielder("mw", "Midwicket", "MW", 37f, 40f),
-                        Fielder("dtm", "Deep Third Man", "DTM", 82f, 76f),
-                        Fielder("dp", "Deep Point", "DP", 88f, 50f),
-                        Fielder("dc", "Deep Cover", "DC", 82f, 24f),
-                        Fielder("loff", "Long-off", "LOff", 60f, 10f),
-                        Fielder("lon", "Long-on", "LOn", 40f, 10f)
-                    )
-                    "Death" -> listOf(
-                        Fielder("wk", "Wicketkeeper", "WK", 50f, 74f, isWK = true),
-                        Fielder("sfl", "Short Fine Leg", "SFL", 42f, 65f),
-                        Fielder("mo", "Mid-off (Catching)", "MO", 57f, 38f),
-                        Fielder("mw", "Midwicket", "MW", 37f, 40f),
-                        Fielder("p", "Point", "P", 72f, 50f),
-                        Fielder("c", "Cover", "C", 68f, 40f),
-                        Fielder("dsql", "Deep Square Leg", "DSQL", 18f, 65f),
-                        Fielder("lon", "Long-on", "LOn", 40f, 10f),
-                        Fielder("loff", "Long-off", "LOff", 60f, 10f),
-                        Fielder("dc", "Deep Cover", "DC", 82f, 24f),
-                        Fielder("tm", "Third Man (Deep)", "TM", 82f, 76f)
-                    )
-                    else -> listOf(
-                        Fielder("wk", "Wicketkeeper", "WK", 50f, 72f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL1", 55f, 61f),
-                        Fielder("sl2", "2nd Slip", "SL2", 59f, 63f),
-                        Fielder("g", "Gully", "G", 64f, 60f),
-                        Fielder("p", "Point", "P", 72f, 50f),
-                        Fielder("c", "Cover", "C", 68f, 40f),
-                        Fielder("moff", "Mid-off", "MOff", 57f, 35f),
-                        Fielder("mon", "Mid-on", "MOn", 43f, 35f),
-                        Fielder("sl", "Square Leg", "SL", 32f, 54f),
-                        Fielder("fl", "Fine Leg (Deep)", "FL", 25f, 78f),
-                        Fielder("tm", "Third Man (Deep)", "TM", 76f, 76f)
-                    )
-                }
-            }
-            "Spin" -> {
-                when (overType) {
-                    "Powerplay" -> listOf(
-                        Fielder("wk", "Wicketkeeper", "WK", 50f, 59.5f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL", 55f, 61f),
-                        Fielder("smon", "Silly Mid-on", "SMOn", 46f, 52f),
-                        Fielder("c", "Cover", "C", 70f, 42f),
-                        Fielder("moff", "Mid-off", "MOff", 57f, 35f),
-                        Fielder("mon", "Mid-on", "MOn", 43f, 35f),
-                        Fielder("p", "Point", "P", 72f, 50f),
-                        Fielder("sl", "Square Leg", "SL", 32f, 54f),
-                        Fielder("fl", "Fine Leg", "FL", 38f, 68f),
-                        Fielder("tm", "Deep Third Man", "TM", 82f, 76f),
-                        Fielder("dmw", "Deep Midwicket", "DMW", 20f, 30f)
-                    )
-                    "Non-Powerplay" -> listOf(
-                        Fielder("wk", "Wicketkeeper", "WK", 50f, 59.5f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL", 55f, 61f),
-                        Fielder("slg", "Short Leg", "SLg", 46f, 57f),
-                        Fielder("smon", "Silly Mid-on", "SMOn", 46f, 52f),
-                        Fielder("c", "Cover", "C", 70f, 42f),
-                        Fielder("fl", "Fine Leg", "FL", 38f, 68f),
-                        Fielder("lon", "Long-on", "LOn", 40f, 10f),
-                        Fielder("loff", "Long-off", "LOff", 60f, 10f),
-                        Fielder("dmw", "Deep Midwicket", "DMW", 20f, 28f),
-                        Fielder("dsl", "Deep Square Leg", "DSL", 18f, 65f),
-                        Fielder("dp", "Deep Point", "DP", 88f, 50f)
-                    )
-                    "Death" -> listOf( // "Spin - Attacking"
-                        Fielder("wk", "Wicketkeeper", "WK", 50f, 59.5f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL1", 56f, 61f),
-                        Fielder("sl2", "2nd Slip", "SL2", 60f, 63f),
-                        Fielder("lsl", "Leg Slip", "LSl", 44f, 61f),
-                        Fielder("sp", "Silly Point", "SP", 56f, 55f),
-                        Fielder("slg", "Short Leg", "SLg", 46f, 57f),
-                        Fielder("mon", "Mid-on (Catching)", "MOn", 44f, 44f),
-                        Fielder("moff", "Mid-off (Catching)", "MOff", 56f, 44f),
-                        Fielder("p", "Point", "P", 72f, 50f),
-                        Fielder("fl", "Fine Leg", "FL", 38f, 68f),
-                        Fielder("lon", "Long-on (Deep)", "LOn", 40f, 10f)
-                    )
-                    else -> listOf(
-                        Fielder("wk", "Wicketkeeper", "WK", 50f, 59.5f, isWK = true),
-                        Fielder("sl1", "1st Slip", "SL", 55f, 61f),
-                        Fielder("slg", "Short Leg", "SLg", 46f, 57f),
-                        Fielder("smon", "Silly Mid-on", "SMOn", 46f, 52f),
-                        Fielder("c", "Cover", "C", 70f, 42f),
-                        Fielder("fl", "Fine Leg", "FL", 38f, 68f),
-                        Fielder("lon", "Long-on", "LOn", 40f, 10f),
-                        Fielder("loff", "Long-off", "LOff", 60f, 10f),
-                        Fielder("dmw", "Deep Midwicket", "DMW", 20f, 28f),
-                        Fielder("dsl", "Deep Square Leg", "DSL", 18f, 65f),
-                        Fielder("dp", "Deep Point", "DP", 88f, 50f)
-                    )
-                }
-            }
-            else -> emptyList()
+data class PositionAnchor(val name: String, val x: Float, val y: Float)
+
+val BOWLER_SPOT = PositionAnchor("Bowler", 50f, 39f)
+val KEEPER_SPOT_PACE = PositionAnchor("Keeper", 50f, 72f)
+val KEEPER_SPOT_SPIN = PositionAnchor("Keeper", 50f, 60f)
+
+val POSITION_ANCHORS: List<PositionAnchor> = listOf(
+    // Straight, in the V
+    PositionAnchor("Mid-off", 58f, 37f),
+    PositionAnchor("Mid-on", 42f, 37f),
+    PositionAnchor("Long-off", 61f, 13f),
+    PositionAnchor("Long-on", 39f, 13f),
+    PositionAnchor("Silly Mid-off", 54f, 50f),
+    PositionAnchor("Silly Mid-on", 46f, 50f),
+
+    // Off side, in front of square
+    PositionAnchor("Extra Cover", 66f, 42f),
+    PositionAnchor("Deep Extra Cover", 80f, 21f),
+    PositionAnchor("Cover", 70f, 48f),
+    PositionAnchor("Deep Cover", 86f, 31f),
+    PositionAnchor("Cover Point", 74f, 53f),
+
+    // Off side, square
+    PositionAnchor("Point", 73f, 58f),
+    PositionAnchor("Deep Point", 89f, 58f),
+    PositionAnchor("Silly Point", 57f, 55f),
+
+    // Off side, behind square
+    PositionAnchor("Backward Point", 71f, 62.5f),
+    PositionAnchor("Gully", 68f, 66f),
+    PositionAnchor("1st Slip", 55f, 66f),
+    PositionAnchor("2nd Slip", 59.5f, 67.5f),
+    PositionAnchor("3rd Slip", 64f, 69f),
+    PositionAnchor("Third Man", 81f, 82f),
+
+    // Leg side, behind square
+    PositionAnchor("Leg Slip", 44f, 65f),
+    PositionAnchor("Leg Gully", 40f, 68f),
+    PositionAnchor("Short Fine Leg", 38f, 71f),
+    PositionAnchor("Fine Leg", 26f, 81f),
+    PositionAnchor("Backward Square Leg", 32f, 64f),
+    PositionAnchor("Deep Backward Square Leg", 18f, 70f),
+
+    // Leg side, square
+    PositionAnchor("Square Leg", 28f, 58f),
+    PositionAnchor("Deep Square Leg", 14f, 58f),
+    PositionAnchor("Short Leg", 44f, 55f),
+
+    // Leg side, in front of square
+    PositionAnchor("Midwicket", 31f, 47f),
+    PositionAnchor("Deep Midwicket", 17f, 34f)
+)
+
+private val ANCHORS_BY_NAME: Map<String, PositionAnchor> = POSITION_ANCHORS.associateBy { it.name }
+
+/** Look up a canonical anchor by name. Throws on a typo so presets fail loudly. */
+fun anchor(name: String): PositionAnchor =
+    ANCHORS_BY_NAME[name] ?: throw IllegalArgumentException("Unknown fielding position: $name")
+
+/** Mirror an x coordinate across the pitch (right-hander <-> left-hander). */
+fun mirrorX(x: Float): Float = 100f - x
+
+/**
+ * The name of the fielding position nearest to (x, y). For a left-handed
+ * batter the point is mirrored back into right-hander space first, so a
+ * fielder on the batter's leg side is named a leg-side position regardless
+ * of which hand is facing.
+ */
+fun getPositionName(x: Float, y: Float, isLeftHanded: Boolean): String {
+    val qx = if (isLeftHanded) mirrorX(x) else x
+    var best = POSITION_ANCHORS[0]
+    var bestDist = Float.POSITIVE_INFINITY
+    for (a in POSITION_ANCHORS) {
+        val dx = a.x - qx
+        val dy = a.y - y
+        val dist = dx * dx + dy * dy
+        if (dist < bestDist) {
+            bestDist = dist
+            best = a
         }
+    }
+    return best.name
+}
+
+/**
+ * How to refer to where a player is standing. The bowler and keeper hold a
+ * named role rather than a fielding position, so they describe themselves
+ * instead of being looked up on the position map — the one thing every call
+ * site needs to get right, and the only thing this function does.
+ */
+fun describePosition(player: Fielder, isLeftHanded: Boolean): String = when (player.role) {
+    FielderRole.BOWLER -> "Bowler"
+    FielderRole.KEEPER -> "Wicketkeeper"
+    FielderRole.FIELDER -> getPositionName(player.x, player.y, isLeftHanded)
+}
+
+// ==========================================
+// SQUAD ROSTER
+//
+// Names are keyed by slot id and persisted independently of field layout,
+// so renaming a player carries across every preset and every saved slot
+// instead of going stale the moment the layout changes.
+// ==========================================
+
+val FIELDER_SLOT_IDS = listOf("f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9")
+const val BOWLER_ID = "bowler"
+const val KEEPER_ID = "keeper"
+val ALL_SLOT_IDS = listOf(BOWLER_ID, KEEPER_ID) + FIELDER_SLOT_IDS
+
+/** Names used until the user fills in their own squad. */
+fun defaultName(slotId: String): String = when {
+    slotId == BOWLER_ID -> "Bowler"
+    slotId == KEEPER_ID -> "Keeper"
+    else -> "Player ${slotId.removePrefix("f")}"
+}
+
+fun isDefaultName(slotId: String, name: String): Boolean = name.trim() == defaultName(slotId)
+
+/**
+ * The short form shown inside a player's dot on the field. Defaults collapse
+ * to something a cricketer reads instantly — BWL, WK, P1..P9 — and a real
+ * squad name becomes initials, so "Jasprit Bumrah" reads as "JB".
+ */
+fun shortLabel(slotId: String, name: String): String {
+    val trimmed = name.trim()
+    if (trimmed.isEmpty()) return "?"
+
+    if (isDefaultName(slotId, trimmed)) {
+        return when {
+            slotId == BOWLER_ID -> "BWL"
+            slotId == KEEPER_ID -> "WK"
+            else -> "P${slotId.removePrefix("f")}"
+        }
+    }
+
+    val parts = trimmed.split(Regex("\\s+")).filter { it.isNotEmpty() }
+    return when {
+        parts.size == 1 -> parts[0].take(3).uppercase()
+        else -> (parts.first().take(1) + parts.last().take(1)).uppercase()
+    }
+}
+
+/** Squad names keyed by slot id, read from/written to SharedPreferences under [PREFS_ROSTER]. */
+const val PREFS_ROSTER = "squad_roster"
+
+fun loadRoster(prefs: android.content.SharedPreferences): Map<String, String> =
+    ALL_SLOT_IDS.associateWith { prefs.getString(it, null) ?: defaultName(it) }
+
+fun saveRosterName(prefs: android.content.SharedPreferences, slotId: String, name: String) {
+    prefs.edit().putString(slotId, name).apply()
+}
+
+fun resetRoster(prefs: android.content.SharedPreferences) {
+    prefs.edit().clear().apply()
+}
+
+/** Apply squad names on top of a freshly-built field layout. */
+fun applyRoster(players: List<Fielder>, roster: Map<String, String>): List<Fielder> =
+    players.map { p -> roster[p.id]?.let { p.copy(name = it) } ?: p }
+
+// ==========================================
+// PRESET BUILDER
+//
+// Each preset is nine canonical fielding positions by name — the bowler and
+// keeper are added automatically, so every field is a legal eleven. Presets
+// are named rather than hand-placed so they can never drift out of sync with
+// what the app calls that spot, and so the same tactical formations shown
+// here match the web app's (both read from the same anchor table design).
+// ==========================================
+
+private val PACE_POWERPLAY = listOf(
+    "1st Slip", "2nd Slip", "Cover Point", "Cover", "Mid-off", "Mid-on", "Square Leg", "Fine Leg", "Third Man"
+)
+private val PACE_NON_POWERPLAY = listOf(
+    "1st Slip", "Mid-off", "Short Fine Leg", "Midwicket", "Third Man", "Deep Point", "Deep Cover", "Long-off", "Long-on"
+)
+private val PACE_DEATH = listOf(
+    "Short Fine Leg", "Mid-off", "Midwicket", "Point", "Deep Backward Square Leg", "Long-on", "Long-off", "Deep Cover", "Third Man"
+)
+private val SPIN_POWERPLAY = listOf(
+    "1st Slip", "Silly Mid-on", "Cover", "Mid-off", "Mid-on", "Point", "Square Leg", "Fine Leg", "Third Man"
+)
+private val SPIN_NON_POWERPLAY = listOf(
+    "1st Slip", "Silly Mid-on", "Cover", "Mid-on", "Fine Leg", "Long-on", "Long-off", "Deep Point", "Deep Cover"
+)
+private val SPIN_DEATH = listOf(
+    "1st Slip", "2nd Slip", "Leg Slip", "Short Leg", "Mid-on", "Mid-off", "Point", "Fine Leg", "Long-on"
+)
+
+object FieldPresets {
+    /** Build the full eleven: fixed bowler, keeper positioned for the bowling type, nine named fielders. */
+    private fun buildField(spec: List<String>, bowlerType: String): List<Fielder> {
+        val keeperSpot = if (bowlerType == "Spin") KEEPER_SPOT_SPIN else KEEPER_SPOT_PACE
+
+        val eleven = mutableListOf(
+            Fielder(BOWLER_ID, FielderRole.BOWLER, defaultName(BOWLER_ID), BOWLER_SPOT.x, BOWLER_SPOT.y),
+            Fielder(KEEPER_ID, FielderRole.KEEPER, defaultName(KEEPER_ID), keeperSpot.x, keeperSpot.y)
+        )
+        spec.forEachIndexed { i, positionName ->
+            val slotId = FIELDER_SLOT_IDS[i]
+            val spot = anchor(positionName)
+            eleven.add(Fielder(slotId, FielderRole.FIELDER, defaultName(slotId), spot.x, spot.y))
+        }
+        return eleven
+    }
+
+    fun getPreset(bowlerType: String, overType: String, format: String): List<Fielder> {
+        val spec = if (bowlerType == "Spin") {
+            when (overType) {
+                "Powerplay" -> SPIN_POWERPLAY
+                "Death" -> SPIN_DEATH
+                else -> SPIN_NON_POWERPLAY
+            }
+        } else {
+            when (overType) {
+                "Powerplay" -> PACE_POWERPLAY
+                "Death" -> PACE_DEATH
+                else -> PACE_NON_POWERPLAY
+            }
+        }
+        return buildField(spec, bowlerType)
     }
 }
 
 // ==========================================
 // UTILITY FUNCTIONS & LOGIC
 // ==========================================
+
+/**
+ * Fielding restrictions are written in terms of *fielders*: the bowler is at
+ * the stumps and the keeper is behind them, so neither counts toward the
+ * circle or leg-side limits.
+ */
+private fun fieldersOnly(players: List<Fielder>): List<Fielder> =
+    players.filter { it.role == FielderRole.FIELDER }
 
 fun validateField(
     players: List<Fielder>,
@@ -221,94 +357,51 @@ fun validateField(
 ): ValidationResults {
     val violations = mutableListOf<String>()
     val illegalFielderIds = mutableSetOf<String>()
+    val fielders = fieldersOnly(players)
 
-    // 1. Calculate how many players are outside the circle (Radius roughly 25f)
-    var outsideCount = 0
-    val outsideFielders = mutableListOf<Fielder>()
-
-    for (player in players) {
-        val dx = player.x - 50f
-        val dy = player.y - 50f
-        val dist = sqrt(dx * dx + dy * dy)
-        if (dist > 25f) {
-            outsideCount++
-            outsideFielders.add(player)
-        }
+    // 1. Fielders outside the 30-yard circle (radius 25)
+    val outsideFielders = fielders.filter {
+        val dx = it.x - 50f
+        val dy = it.y - 50f
+        sqrt(dx * dx + dy * dy) > 25f
     }
+    val outsideCount = outsideFielders.size
 
     val maxAllowedOutside = when (format) {
-        "T20" -> {
-            when (overType) {
-                "Powerplay" -> 2
-                "Non-Powerplay" -> 5
-                "Death" -> 5
-                else -> 5
-            }
+        "T20" -> if (overType == "Powerplay") 2 else 5
+        "ODI" -> when (overType) {
+            "Powerplay" -> 2 // Powerplay 1
+            "Death" -> 5 // Powerplay 3
+            else -> 4 // Powerplay 2
         }
-        "ODI" -> {
-            when (overType) {
-                "Powerplay" -> 2 // Powerplay 1
-                "Non-Powerplay" -> 4 // Powerplay 2
-                "Death" -> 5 // Powerplay 3
-                else -> 4
-            }
-        }
-        "Test" -> null
-        else -> null
+        else -> null // Test cricket has no circle restriction
     }
 
-    // Checking circle rules
-    if (maxAllowedOutside != null) {
-        if (outsideCount > maxAllowedOutside) {
-            violations.add("Too many outfielders: max $maxAllowedOutside allowed, currently has $outsideCount")
-            for (player in outsideFielders) {
-                illegalFielderIds.add(player.id)
-            }
-        }
-
-        // Check minimum 2 players inside (for non-powerplay scenarios)
-        val insideCount = 11 - outsideCount
-        if (insideCount < 2) {
-            violations.add("At least 2 fielders must remain inside the 30-yard circle")
-        }
+    if (maxAllowedOutside != null && outsideCount > maxAllowedOutside) {
+        violations.add("Too many outfielders: max $maxAllowedOutside allowed, currently has $outsideCount")
+        for (player in outsideFielders) illegalFielderIds.add(player.id)
     }
 
-    // 2. Leg-side behind square rule (all formats): max 2 fielders behind square on leg-side (excluding WK)
-    // Striker crease is at Y = 58f. Behind square means Y > 58f.
-    val legSideBehindSquareFielders = mutableListOf<Fielder>()
-    for (player in players) {
-        if (!player.isWK) {
-            val isBehindSquare = player.y > 58f
-            // Striker faces North from bottom:
-            // For RHB, leg-side is left (X < 50f); for LHB, leg-side is right (X > 50f)
-            val isLegSide = if (isLeftHanded) player.x > 50f else player.x < 50f
-            if (isBehindSquare && isLegSide) {
-                legSideBehindSquareFielders.add(player)
-            }
-        }
-    }
-
-    if (legSideBehindSquareFielders.size > 2) {
-        violations.add("Leg-side square limit: max 2 behind square leg, currently has ${legSideBehindSquareFielders.size}")
-        for (player in legSideBehindSquareFielders) {
-            illegalFielderIds.add(player.id)
-        }
-    }
-
-    // 3. Leg-side total limit: max 5 fielders total on leg-side (all formats)
-    val legSideFielders = mutableListOf<Fielder>()
-    for (player in players) {
-        // For RHB, leg-side is left (X < 50f); for LHB, leg-side is right (X > 50f)
+    // 2. Max 2 fielders behind square on the leg side (all formats). Breaching
+    //    this is a no-ball, not just a bad field. Striker crease is at y = 58.
+    val legSideBehindSquare = fielders.filter { player ->
+        val isBehindSquare = player.y > 58f
         val isLegSide = if (isLeftHanded) player.x > 50f else player.x < 50f
-        if (isLegSide) {
-            legSideFielders.add(player)
-        }
+        isBehindSquare && isLegSide
+    }
+    if (legSideBehindSquare.size > 2) {
+        violations.add("Leg-side square limit: max 2 behind square leg, currently has ${legSideBehindSquare.size}")
+        for (player in legSideBehindSquare) illegalFielderIds.add(player.id)
     }
 
-    if (legSideFielders.size > 5) {
-        violations.add("Leg-side overcrowding: max 5 total allowed on leg-side, currently has ${legSideFielders.size}")
-        for (player in legSideFielders) {
-            illegalFielderIds.add(player.id)
+    // 3. Max 5 fielders on the leg side (limited overs).
+    if (maxAllowedOutside != null) {
+        val legSide = fielders.filter { player ->
+            if (isLeftHanded) player.x > 50f else player.x < 50f
+        }
+        if (legSide.size > 5) {
+            violations.add("Leg-side overcrowding: max 5 total allowed on leg-side, currently has ${legSide.size}")
+            for (player in legSide) illegalFielderIds.add(player.id)
         }
     }
 
@@ -351,9 +444,9 @@ fun getFielderZone(x: Float, y: Float, isLeftHanded: Boolean): String {
     return "$zoneSide $vertLabel ($regionName)"
 }
 
-// Serialisation helper for presets
+// Serialisation helper for custom preset slots
 fun serializeField(players: List<Fielder>): String {
-    return players.joinToString(";") { "${it.id},${it.name},${it.label},${it.x},${it.y},${if (it.isWK) 1 else 0}" }
+    return players.joinToString(";") { "${it.id},${it.role},${it.name},${it.x},${it.y}" }
 }
 
 fun deserializeField(data: String): List<Fielder>? {
@@ -362,11 +455,10 @@ fun deserializeField(data: String): List<Fielder>? {
             val parts = it.split(",")
             Fielder(
                 id = parts[0],
-                name = parts[1],
-                label = parts[2],
+                role = FielderRole.valueOf(parts[1]),
+                name = parts[2],
                 x = parts[3].toFloat(),
-                y = parts[4].toFloat(),
-                isWK = parts[5] == "1"
+                y = parts[4].toFloat()
             )
         }
     } catch (e: Exception) {
@@ -407,6 +499,7 @@ class MainActivity : ComponentActivity() {
 fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val sharedPrefs = remember { context.getSharedPreferences("tactical_presets", Context.MODE_PRIVATE) }
+    val rosterPrefs = remember { context.getSharedPreferences(PREFS_ROSTER, Context.MODE_PRIVATE) }
 
     // States
     var format by remember { mutableStateOf("T20") }
@@ -414,9 +507,13 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
     var bowlerType by remember { mutableStateOf("Pace") }
     var isLeftHanded by remember { mutableStateOf(false) }
 
+    // Squad names, keyed by slot id — persisted independently of field layout so a
+    // rename carries across every preset and saved slot instead of going stale.
+    var roster by remember { mutableStateOf(loadRoster(rosterPrefs)) }
+
     // Active fielders state
     var players by remember {
-        mutableStateOf(FieldPresets.getPreset(bowlerType, overType, format))
+        mutableStateOf(applyRoster(FieldPresets.getPreset(bowlerType, overType, format), roster))
     }
 
     var selectedPlayerId by remember { mutableStateOf<String?>(null) }
@@ -436,12 +533,30 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
 
     // Trigger loader on toggle change
     fun loadBasePreset(newBowler: String, newOver: String, newFormat: String) {
-        players = FieldPresets.getPreset(newBowler, newOver, newFormat)
+        players = applyRoster(FieldPresets.getPreset(newBowler, newOver, newFormat), roster)
         if (isLeftHanded) {
             // Re-apply mirror
             players = players.map { it.copy(x = 100f - it.x) }
         }
         selectedPlayerId = null
+    }
+
+    // Rename a squad slot. Applied to the roster (so it persists and carries across
+    // every saved field) and to the players currently on the pitch. serializeField
+    // uses ',' and ';' as delimiters for a saved slot, so a name containing either
+    // would corrupt it — strip them here, the one place every rename goes through.
+    fun renamePlayer(slotId: String, rawName: String) {
+        val name = rawName.replace(",", "").replace(";", "")
+        saveRosterName(rosterPrefs, slotId, name)
+        roster = roster + (slotId to name)
+        players = players.map { if (it.id == slotId) it.copy(name = name) else it }
+    }
+
+    fun resetRosterNames() {
+        resetRoster(rosterPrefs)
+        roster = loadRoster(rosterPrefs)
+        players = applyRoster(players, roster)
+        Toast.makeText(context, "Squad names reset", Toast.LENGTH_SHORT).show()
     }
 
     // Custom preset saving function
@@ -470,7 +585,9 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
     fun loadCustomPreset(serialized: String) {
         val loaded = deserializeField(serialized)
         if (loaded != null) {
-            players = loaded
+            // The current roster wins over whatever names were saved in the slot,
+            // same as loading a base preset — a rename should stick everywhere.
+            players = applyRoster(loaded, roster)
             selectedPlayerId = null
             Toast.makeText(context, "Loaded Custom Preset successfully!", Toast.LENGTH_SHORT).show()
         }
@@ -614,6 +731,9 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
                             validation = validation,
                             players = players,
                             selectedPlayerId = selectedPlayerId,
+                            roster = roster,
+                            onRenamePlayer = { slotId, name -> renamePlayer(slotId, name) },
+                            onResetRoster = { resetRosterNames() },
                             onFormatChanged = {
                                 val prevFormat = format
                                 format = it
@@ -705,6 +825,9 @@ fun CricketFieldPlannerApp(modifier: Modifier = Modifier) {
                             validation = validation,
                             players = players,
                             selectedPlayerId = selectedPlayerId,
+                            roster = roster,
+                            onRenamePlayer = { slotId, name -> renamePlayer(slotId, name) },
+                            onResetRoster = { resetRosterNames() },
                             onFormatChanged = {
                                 val prevFormat = format
                                 format = it
@@ -843,7 +966,8 @@ fun CricketFieldCanvas(
                 .fillMaxSize()
                 .pointerInput(selectedPlayerId, widthPx, heightPx) {
                     detectTapGestures { tapOffset ->
-                        if (selectedPlayerId != null) {
+                        val selected = players.find { it.id == selectedPlayerId }
+                        if (selected != null && selected.role == FielderRole.FIELDER) {
                             val targetX = 50f + ((tapOffset.x - centerXPx) / (rField * 2.1f)) * 100f
                             val targetY = 50f + ((tapOffset.y - centerYPx) / (rField * 2.1f)) * 100f
 
@@ -856,7 +980,7 @@ fun CricketFieldCanvas(
                             val clampedY = if (dist > limitRad) 50f + (oy / dist) * limitRad else targetY
 
                             onPlayerPositionChanged(
-                                selectedPlayerId,
+                                selected.id,
                                 clampedX.coerceIn(2.5f, 97.5f),
                                 clampedY.coerceIn(2.5f, 97.5f)
                             )
@@ -1070,6 +1194,7 @@ fun CricketFieldCanvas(
 
             val isSelected = player.id == selectedPlayerId
             val isViolating = validation.illegalFielderIds.contains(player.id)
+            val isMovable = player.role == FielderRole.FIELDER
 
             var dragX by remember(player.id) { mutableFloatStateOf(player.x) }
             var dragY by remember(player.id) { mutableFloatStateOf(player.y) }
@@ -1078,8 +1203,47 @@ fun CricketFieldCanvas(
                 dragY = player.y
             }
 
-            // Outer hit box container
+            // Outer hit box container. The bowler and keeper hold fixed stations —
+            // they can still be selected (tapped) but never get the drag gesture.
             val fielderRadiusPx = with(density) { 24.dp.toPx() }
+            val dragModifier = if (isMovable) {
+                Modifier.pointerInput(player.id, rField) {
+                    detectDragGestures(
+                        onDragStart = {
+                            dragX = player.x
+                            dragY = player.y
+                            onPlayerSelected(player.id)
+                        },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+
+                            // Calculate candidate delta percentages
+                            val dxPercent = (dragAmount.x / (rField * 2.1f)) * 100f
+                            val dyPercent = (dragAmount.y / (rField * 2.1f)) * 100f
+
+                            dragX += dxPercent
+                            dragY += dyPercent
+
+                            // Clamp logic based on general outer boundary (allowing full reach to 47.5%)
+                            val ox = dragX - 50f
+                            val oy = dragY - 50f
+                            val limitRad = 47.5f
+                            val distFromCenter = sqrt(ox * ox + oy * oy)
+
+                            val nextX = if (distFromCenter > limitRad) 50f + (ox / distFromCenter) * limitRad else dragX
+                            val nextY = if (distFromCenter > limitRad) 50f + (oy / distFromCenter) * limitRad else dragY
+
+                            onPlayerPositionChanged(
+                                player.id,
+                                nextX.coerceIn(2.5f, 97.5f),
+                                nextY.coerceIn(2.5f, 97.5f)
+                            )
+                        }
+                    )
+                }
+            } else {
+                Modifier
+            }
             Box(
                 modifier = Modifier
                     .align(Alignment.TopStart)
@@ -1090,40 +1254,7 @@ fun CricketFieldCanvas(
                         )
                     }
                     .size(48.dp)
-                    .pointerInput(player.id, rField) {
-                        detectDragGestures(
-                            onDragStart = {
-                                dragX = player.x
-                                dragY = player.y
-                                onPlayerSelected(player.id)
-                            },
-                            onDrag = { change, dragAmount ->
-                                change.consume()
-
-                                // Calculate candidate delta percentages
-                                val dxPercent = (dragAmount.x / (rField * 2.1f)) * 100f
-                                val dyPercent = (dragAmount.y / (rField * 2.1f)) * 100f
-
-                                dragX += dxPercent
-                                dragY += dyPercent
-
-                                // Clamp logic based on general outer boundary (allowing full reach to 47.5%)
-                                val ox = dragX - 50f
-                                val oy = dragY - 50f
-                                val limitRad = 47.5f
-                                val distFromCenter = sqrt(ox * ox + oy * oy)
-
-                                val nextX = if (distFromCenter > limitRad) 50f + (ox / distFromCenter) * limitRad else dragX
-                                val nextY = if (distFromCenter > limitRad) 50f + (oy / distFromCenter) * limitRad else dragY
-
-                                onPlayerPositionChanged(
-                                    player.id,
-                                    nextX.coerceIn(2.5f, 97.5f),
-                                    nextY.coerceIn(2.5f, 97.5f)
-                                )
-                            }
-                        )
-                    },
+                    .then(dragModifier),
                 contentAlignment = Alignment.Center
             ) {
                 // Highlight/Alert rings
@@ -1145,6 +1276,7 @@ fun CricketFieldCanvas(
                 }
 
                 // Core visible circular token
+                val label = shortLabel(player.id, player.name)
                 Box(
                     modifier = Modifier
                         .size(28.dp)
@@ -1152,7 +1284,8 @@ fun CricketFieldCanvas(
                         .background(
                             when {
                                 isViolating -> Color(0xFFFF3B30)
-                                player.isWK -> Color(0xFFFFC107) // Gold highlight for keeper
+                                player.role == FielderRole.KEEPER -> Color(0xFFFFC107) // Gold highlight for keeper
+                                player.role == FielderRole.BOWLER -> Color(0xFFB0BEC5) // Fixed-role tint for bowler
                                 isSelected -> Color(0xFF00E5FF) // Teal accent for selected
                                 else -> Color.White
                             }
@@ -1161,10 +1294,10 @@ fun CricketFieldCanvas(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = player.label,
+                        text = label,
                         fontWeight = FontWeight.Bold,
-                        fontSize = if (player.label.length >= 3) 7.sp else 8.sp,
-                        color = if (player.isWK || isSelected || isViolating) Color.Black else Color(0xFF0E1117),
+                        fontSize = if (label.length >= 3) 7.sp else 8.sp,
+                        color = if (!isMovable || isSelected || isViolating) Color.Black else Color(0xFF0E1117),
                         textAlign = TextAlign.Center
                     )
                 }
@@ -1186,6 +1319,9 @@ fun ControlsDrawer(
     validation: ValidationResults,
     players: List<Fielder>,
     selectedPlayerId: String?,
+    roster: Map<String, String>,
+    onRenamePlayer: (String, String) -> Unit,
+    onResetRoster: () -> Unit,
     onFormatChanged: (String) -> Unit,
     onOverTypeChanged: (String) -> Unit,
     onBowlerTypeChanged: (String) -> Unit,
@@ -1236,10 +1372,14 @@ fun ControlsDrawer(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "SELECTED: ${selectedPlayer.name} (${selectedPlayer.label})",
+                            text = "SELECTED: ${selectedPlayer.name} (${describePosition(selectedPlayer, isLeftHanded)})",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (selectedPlayer.isWK) Color(0xFFFFB900) else Color(0xFFD1E1FF)
+                            color = when (selectedPlayer.role) {
+                                FielderRole.KEEPER -> Color(0xFFFFB900)
+                                FielderRole.BOWLER -> Color(0xFFB0BEC5)
+                                FielderRole.FIELDER -> Color(0xFFD1E1FF)
+                            }
                         )
                         val isViolating = validation.illegalFielderIds.contains(selectedPlayer.id)
                         if (isViolating) {
@@ -1264,8 +1404,9 @@ fun ControlsDrawer(
                         color = Color(0xFFA8ABB4).copy(alpha = 0.6f)
                     )
 
-                    // Fine-tuning nudge buttons and quick positions
-                    if (onPlayerPositionChanged != null) {
+                    // Fine-tuning nudge buttons and quick positions — the bowler and
+                    // keeper hold fixed stations, so this is fielders only.
+                    if (onPlayerPositionChanged != null && selectedPlayer.role == FielderRole.FIELDER) {
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "Fine-Tune Position (Drag or Nudge):",
@@ -1334,6 +1475,12 @@ fun ControlsDrawer(
                                 Text("Down ▼", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
+                    } else if (selectedPlayer.role != FielderRole.FIELDER) {
+                        Text(
+                            text = "Fixed position — holds this station on every field.",
+                            fontSize = 10.sp,
+                            color = Color(0xFFA8ABB4)
+                        )
                     }
                 }
             }
@@ -1742,6 +1889,100 @@ fun ControlsDrawer(
             }
         }
 
+        // Squad roster — name your eleven. Names live independently of field layout
+        // (see renamePlayer/loadRoster) so they carry across every preset and slot.
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF0E1117), RoundedCornerShape(12.dp))
+                .border(1.dp, Color(0xFF33353A), RoundedCornerShape(12.dp))
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "SQUAD",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFA8ABB4),
+                    letterSpacing = 1.sp
+                )
+                val hasCustomNames = ALL_SLOT_IDS.any { !isDefaultName(it, roster[it] ?: "") }
+                if (hasCustomNames) {
+                    Text(
+                        text = "Reset names",
+                        fontSize = 10.sp,
+                        color = Color(0xFFA8ABB4),
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable { onResetRoster() }
+                    )
+                }
+            }
+            Text(
+                text = "Names stick with the player as you move them, and carry across every saved field.",
+                fontSize = 10.sp,
+                color = Color(0xFFA8ABB4).copy(alpha = 0.8f)
+            )
+
+            val orderedPlayers = players.sortedBy { p ->
+                when (p.role) {
+                    FielderRole.BOWLER -> 0
+                    FielderRole.KEEPER -> 1
+                    FielderRole.FIELDER -> 2
+                }
+            }
+            orderedPlayers.forEach { p ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(26.dp)
+                            .clip(CircleShape)
+                            .background(
+                                when (p.role) {
+                                    FielderRole.KEEPER -> Color(0xFFFFC107)
+                                    FielderRole.BOWLER -> Color(0xFFB0BEC5)
+                                    FielderRole.FIELDER -> Color(0xFF404859)
+                                }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = shortLabel(p.id, p.name),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (p.role == FielderRole.FIELDER) Color.White else Color.Black
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = roster[p.id] ?: "",
+                            onValueChange = { if (it.length <= 24) onRenamePlayer(p.id, it) },
+                            placeholder = { Text(defaultName(p.id), fontSize = 11.sp) },
+                            singleLine = true,
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, color = Color.White),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                        )
+                        Text(
+                            text = describePosition(p, isLeftHanded) +
+                                if (p.role != FielderRole.FIELDER) " · fixed" else "",
+                            fontSize = 9.sp,
+                            color = Color(0xFFA8ABB4)
+                        )
+                    }
+                }
+            }
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1942,7 +2183,7 @@ fun ExportPlannerDialog(
         players.forEach { p ->
             val isDeep = sqrt((p.x-50f).pow(2) + (p.y-50f).pow(2)) > 25f
             val zone = getFielderZone(p.x, p.y, isLeftHanded)
-            sb.append("- ${p.label} (${p.name}): X:${p.x.toInt()}% Y:${p.y.toInt()}% [$zone]\n")
+            sb.append("- ${describePosition(p, isLeftHanded)} (${p.name}): X:${p.x.toInt()}% Y:${p.y.toInt()}% [$zone]\n")
         }
         sb.toString()
     }
