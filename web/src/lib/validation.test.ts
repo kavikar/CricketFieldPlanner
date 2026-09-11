@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validateField, getFielderZone } from "./validation";
-import { getPositionName, isOutsideCircle } from "./positions";
+import { describePosition, getPositionName, isOutsideCircle } from "./positions";
 import { getPreset } from "../data/presets";
 import type { Fielder } from "../types";
 
@@ -153,6 +153,35 @@ describe("getPositionName", () => {
     expect(getPositionName(26, 81, false)).toBe("Fine Leg");
     expect(getPositionName(74, 81, true)).toBe("Fine Leg");
     expect(getPositionName(26, 81, true)).toBe("Third Man");
+  });
+});
+
+describe("describePosition", () => {
+  it("names a fielder's actual fielding position", () => {
+    const fielder = { role: "fielder" as const, x: 56, y: 65 };
+    expect(describePosition(fielder, false)).toBe("1st Slip");
+  });
+
+  it("never looks up the bowler or keeper on the position map, even when their fixed spot sits nearest a named position", () => {
+    // Regression: the bowler's spot (50, 39) is nearest the "Mid-off" anchor,
+    // and the pace keeper's spot (50, 72) is nearest "1st Slip" — real fielding
+    // positions those roles are not playing. describePosition must short-circuit
+    // on role before ever calling getPositionName, not just usually get it right.
+    const [bowler] = getPreset("Pace", "Powerplay", "T20").filter((p) => p.role === "bowler");
+    const [keeper] = getPreset("Pace", "Powerplay", "T20").filter((p) => p.role === "keeper");
+
+    // Prove the trap is real: naively naming their coordinates gives a wrong answer.
+    expect(getPositionName(bowler.x, bowler.y, false)).not.toBe("Bowler");
+    expect(getPositionName(keeper.x, keeper.y, false)).not.toBe("Wicketkeeper");
+
+    expect(describePosition(bowler, false)).toBe("Bowler");
+    expect(describePosition(keeper, false)).toBe("Wicketkeeper");
+  });
+
+  it("ignores handedness for the bowler and keeper", () => {
+    const bowler = { role: "bowler" as const, x: 50, y: 39 };
+    expect(describePosition(bowler, false)).toBe("Bowler");
+    expect(describePosition(bowler, true)).toBe("Bowler");
   });
 });
 

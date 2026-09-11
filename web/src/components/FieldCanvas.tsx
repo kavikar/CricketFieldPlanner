@@ -4,7 +4,7 @@ import {
   BOUNDARY_RADIUS,
   CENTRE,
   CIRCLE_RADIUS,
-  getPositionName,
+  describePosition,
   OUTER_CLAMP_RADIUS,
   VIEWBOX_MIN,
   VIEWBOX_SIZE,
@@ -225,7 +225,7 @@ export default function FieldCanvas({
               className={cls}
               tabIndex={0}
               role="button"
-              aria-label={`${player.name}, ${getPositionName(player.x, player.y, isLeftHanded)}${
+              aria-label={`${player.name}, ${describePosition(player, isLeftHanded)}${
                 movable ? "" : " (fixed)"
               }`}
               onPointerDown={(e) => handlePointerDown(e, player)}
@@ -253,7 +253,7 @@ export default function FieldCanvas({
             textAnchor="middle"
             className="token-caption"
           >
-            {getPositionName(selected.x, selected.y, isLeftHanded)}
+            {describePosition(selected, isLeftHanded)}
           </text>
         )}
       </svg>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { BowlerType, Fielder, Format, OverType, ValidationResult } from "../types";
-import { getPositionName, isOutsideCircle } from "../lib/positions";
+import { describePosition, isOutsideCircle } from "../lib/positions";
 
 interface Props {
   players: Fielder[];
@@ -36,13 +36,7 @@ export default function ExportDialog({
     );
     lines.push("");
     for (const p of players) {
-      const where =
-        p.role === "bowler"
-          ? "Bowler"
-          : p.role === "keeper"
-            ? "Wicketkeeper"
-            : getPositionName(p.x, p.y, isLeftHanded);
-      lines.push(`- ${p.name}: ${where}`);
+      lines.push(`- ${p.name}: ${describePosition(p, isLeftHanded)}`);
     }
     return lines.join("\n");
   }, [players, format, overType, bowlerType, isLeftHanded, validation]);
@@ -59,17 +53,11 @@ export default function ExportDialog({
   const handleDownloadCsv = () => {
     const header = "slot,name,role,position,x,y,outside_circle";
     const rows = players.map((p) => {
-      const where =
-        p.role === "bowler"
-          ? "Bowler"
-          : p.role === "keeper"
-            ? "Wicketkeeper"
-            : getPositionName(p.x, p.y, isLeftHanded);
       return [
         p.id,
         JSON.stringify(p.name),
         p.role,
-        JSON.stringify(where),
+        JSON.stringify(describePosition(p, isLeftHanded)),
         p.x.toFixed(1),
         p.y.toFixed(1),
         isOutsideCircle(p.x, p.y) ? 1 : 0,

@@ -1,5 +1,5 @@
 import type { BowlerType, Fielder, Format, OverType, ValidationResult } from "../types";
-import { getPositionName, isOutsideCircle } from "./positions";
+import { describePosition, isOutsideCircle } from "./positions";
 import { getApiKey } from "./apiKey";
 
 const MODEL = "gemini-2.5-flash";
@@ -25,12 +25,9 @@ export async function getTacticalAdvice(
 
   const fieldSummary = players
     .map((p) => {
-      const where =
-        p.role === "bowler"
-          ? "Bowler (at the stumps)"
-          : p.role === "keeper"
-            ? "Wicketkeeper"
-            : `${getPositionName(p.x, p.y, isLeftHanded)}${isOutsideCircle(p.x, p.y) ? ", outside the circle" : ""}`;
+      let where = describePosition(p, isLeftHanded);
+      if (p.role === "bowler") where += " (at the stumps)";
+      else if (p.role === "fielder" && isOutsideCircle(p.x, p.y)) where += ", outside the circle";
       return `- ${p.name}: ${where}`;
     })
     .join("\n");
