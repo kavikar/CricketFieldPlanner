@@ -1,5 +1,5 @@
 import type { Fielder, Roster } from "../../types";
-import { getPositionName } from "../../lib/positions";
+import { describePosition } from "../../lib/positions";
 import { defaultName, isDefaultName, shortLabel } from "../../lib/roster";
 
 interface Props {
@@ -58,11 +58,8 @@ export default function SquadPanel({
                   maxLength={24}
                 />
                 <span className="squad-position">
-                  {p.role === "bowler"
-                    ? "Bowler · fixed"
-                    : p.role === "keeper"
-                      ? "Wicketkeeper · fixed"
-                      : getPositionName(p.x, p.y, isLeftHanded)}
+                  {describePosition(p, isLeftHanded)}
+                  {p.role !== "fielder" && " · fixed"}
                 </span>
               </div>
             </li>

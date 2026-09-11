@@ -15,10 +15,25 @@
  * continuum around the striker, not a rectangular grid, and a fielder standing
  * between cover and point genuinely is "somewhere around cover point". Because
  * the name is computed, it always tracks where a player actually is.
+ *
+ * The bowler and keeper's fixed spots sit close to real fielding anchors
+ * (the keeper's pace stance is near the slips, the bowler's follow-through
+ * lands near mid-off) purely as a side effect of where those roles stand on a
+ * real pitch — it does not mean they ARE playing that position. Always route
+ * a player's location through describePosition() below rather than calling
+ * getPositionName() directly, or a bowler/keeper will be mislabelled with
+ * whatever fielding position their spot happens to be nearest to.
  */
 
 export interface PositionAnchor {
   name: string;
+  x: number;
+  y: number;
+}
+
+/** A player's role and coordinates — the minimum describePosition() needs. */
+interface Locatable {
+  role: "bowler" | "keeper" | "fielder";
   x: number;
   y: number;
 }
@@ -120,6 +135,18 @@ export function getPositionName(x: number, y: number, isLeftHanded: boolean): st
     }
   }
   return best.name;
+}
+
+/**
+ * How to refer to where a player is standing. The bowler and keeper hold a
+ * named role rather than a fielding position, so they describe themselves
+ * instead of being looked up on the position map — the one thing every call
+ * site needs to get right, and the only thing this function does.
+ */
+export function describePosition(player: Locatable, isLeftHanded: boolean): string {
+  if (player.role === "bowler") return "Bowler";
+  if (player.role === "keeper") return "Wicketkeeper";
+  return getPositionName(player.x, player.y, isLeftHanded);
 }
 
 /** Distance from the centre of the field. */

@@ -1,5 +1,5 @@
 import type { BowlerType, Fielder, OverType, Format, PresetInfo, ValidationResult } from "../../types";
-import { getPositionName, isOutsideCircle } from "../../lib/positions";
+import { describePosition, isOutsideCircle } from "../../lib/positions";
 
 interface Props {
   format: Format;
@@ -77,7 +77,7 @@ export default function FieldPanel({
           <h2 className="card-label">Selected</h2>
           <div className="selected-name">{selectedPlayer.name}</div>
           <div className="selected-position">
-            {getPositionName(selectedPlayer.x, selectedPlayer.y, isLeftHanded)}
+            {describePosition(selectedPlayer, isLeftHanded)}
           </div>
           <div className="chip-row">
             <span className="chip">
