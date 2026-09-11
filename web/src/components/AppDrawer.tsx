@@ -115,6 +115,7 @@ export default function AppDrawer({
             >
               <span aria-hidden="true">✉</span> Send feedback
             </a>
+            <p className="drawer-version">Version {__APP_VERSION__}</p>
           </section>
         </div>
       </aside>
