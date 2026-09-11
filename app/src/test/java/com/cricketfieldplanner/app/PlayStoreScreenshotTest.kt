@@ -27,13 +27,18 @@ class PlayStoreScreenshotTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
+  // Play Console rejects a screenshot whose longer side is more than 2x the shorter side.
+  // The Pixel 8's full-height 412x915dp viewport renders at ~1078x2399px (ratio ~2.22), which
+  // fails that check. Cropping to 412x780dp keeps width fixed (so the UI isn't rescaled) while
+  // bringing the rendered ratio to ~1.89, comfortably under the 2x limit.
+  private val screenshotSize = Modifier.size(412.dp, 780.dp)
+
   @Test
   fun screenshot_1_t20_powerplay() {
     composeTestRule.setContent {
       MyApplicationTheme(darkTheme = true, dynamicColor = false) {
         CricketFieldPlannerApp(
-          modifier = Modifier
-            .size(412.dp, 915.dp)
+          modifier = screenshotSize
             .background(Color(0xFF0E1117))
         )
       }
@@ -48,8 +53,7 @@ class PlayStoreScreenshotTest {
     composeTestRule.setContent {
       MyApplicationTheme(darkTheme = true, dynamicColor = false) {
         CricketFieldPlannerApp(
-          modifier = Modifier
-            .size(412.dp, 915.dp)
+          modifier = screenshotSize
             .background(Color(0xFF0E1117))
         )
       }
@@ -65,8 +69,7 @@ class PlayStoreScreenshotTest {
     composeTestRule.setContent {
       MyApplicationTheme(darkTheme = true, dynamicColor = false) {
         CricketFieldPlannerApp(
-          modifier = Modifier
-            .size(412.dp, 915.dp)
+          modifier = screenshotSize
             .background(Color(0xFF0E1117))
         )
       }
@@ -82,8 +85,7 @@ class PlayStoreScreenshotTest {
     composeTestRule.setContent {
       MyApplicationTheme(darkTheme = true, dynamicColor = false) {
         CricketFieldPlannerApp(
-          modifier = Modifier
-            .size(412.dp, 915.dp)
+          modifier = screenshotSize
             .background(Color(0xFF0E1117))
         )
       }
