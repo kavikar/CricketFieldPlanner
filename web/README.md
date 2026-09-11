@@ -1,6 +1,6 @@
 # FieldPlanner Pro — Web
 
-A React + TypeScript + Vite web version of the Cricket Field Planner (see the [Android app](../app) for the original). Drag fielders around an interactive pitch, validate placements against ICC fielding regulations for T20/ODI/Test, load tactical presets, mirror the field for left-handed batters, save custom presets locally, export a tactical plan (copy or CSV), and get AI tactical advice via the Gemini API.
+A React + TypeScript + Vite web version of the Cricket Field Planner (see the [Android app](../app) for the Kotlin/Compose counterpart — same field logic, published to Google Play). Drag fielders around an interactive pitch, validate placements against ICC fielding regulations for T20/ODI/Test, load tactical presets, mirror the field for left-handed batters, save custom presets locally, export a tactical plan (copy or CSV), and get AI tactical advice via the Gemini API.
 
 ## Setup
 
@@ -40,7 +40,7 @@ If the `BETA_SIGNUPS` binding is missing, the Function returns a clear `500` ("S
 
 ## Notes
 
-- Field logic (presets, ICC validation rules, zone labeling) is ported 1:1 from the Android app's `MainActivity.kt`.
+- Field logic (presets, ICC validation rules, zone labeling) matches the Android app's equivalent objects in `MainActivity.kt` — same 31-anchor position table, same six presets, same fixed bowler/keeper roles, kept in sync by hand across the two codebases.
 - Custom preset slots are stored in `localStorage` (equivalent to the Android app's `SharedPreferences`).
 - AI Advisor is bring-your-own-key: the visitor's Gemini API key lives only in their browser's `localStorage` (`src/lib/apiKey.ts`) and the browser calls `generativelanguage.googleapis.com` directly (`src/lib/gemini.ts`). This site has no server component in that request path and never sees anyone's key.
 - Beta signup emails are stored in Cloudflare KV via `functions/api/beta-signup.ts` — see the section above for the one-time dashboard setup required.
